@@ -1,0 +1,59 @@
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml
++++ b/pom.xml
+@@ -39,0 +40,4 @@
++        <dependency>
++            <groupId>com.fasterxml.jackson.datatype</groupId>
++            <artifactId>jackson-datatype-jsr310</artifactId>
++        </dependency>
+diff --git a/src/main/java/com/geek/smartoffice/config/RedisConfig.java b/src/main/java/com/geek/smartoffice/config/RedisConfig.java
+--- a/src/main/java/com/geek/smartoffice/config/RedisConfig.java
++++ b/src/main/java/com/geek/smartoffice/config/RedisConfig.java
+@@ -1,33 +1,46 @@
+ package com.geek.smartoffice.config;
+ 
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.SerializationFeature;
++import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+ import org.springframework.cache.annotation.EnableCaching;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.context.annotation.Configuration;
+ import org.springframework.data.redis.connection.RedisConnectionFactory;
+ import org.springframework.data.redis.core.RedisTemplate;
+ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+ import org.springframework.data.redis.serializer.StringRedisSerializer;
+ 
+ @Configuration
+ @EnableCaching // 寮€鍚?Spring Cache 娉ㄨВ椹卞姩
+ public class RedisConfig {
+ 
+     @Bean
+     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+         RedisTemplate<String, Object> template = new RedisTemplate<>();
+         template.setConnectionFactory(connectionFactory);
+ 
+         // 浣跨敤 String 搴忓垪鍖栨柟寮忥紝搴忓垪鍖?Key
+         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+         // 浣跨敤 JSON 搴忓垪鍖栨柟寮忥紝搴忓垪鍖?Value
+-        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
++        GenericJackson2JsonRedisSerializer jsonRedisSerializer = GenericJackson2JsonRedisSerializer.builder()
++                .objectMapper(createRedisObjectMapper())
++                .defaultTyping(true)
++                .build();
+ 
+         template.setKeySerializer(stringRedisSerializer);
+         template.setValueSerializer(jsonRedisSerializer);
+         template.setHashKeySerializer(stringRedisSerializer);
+         template.setHashValueSerializer(jsonRedisSerializer);
+ 
+         template.afterPropertiesSet();
+         return template;
+     }
++
++    private ObjectMapper createRedisObjectMapper() {
++        ObjectMapper objectMapper = new ObjectMapper();
++        objectMapper.registerModule(new JavaTimeModule());
++        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
++        return objectMapper;
++    }
+ }

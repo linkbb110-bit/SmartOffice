@@ -1,0 +1,87 @@
+server:
+  port: ${SERVER_PORT:8081}
+spring:
+  application:
+    name: smartoffice-booking-service
+  profiles:
+    default: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:3306/smartoffice_booking?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:smartoffice_booking}
+    password: ${DB_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: ${REDIS_PASSWORD:}
+      timeout: 1500ms
+      connect-timeout: 1000ms
+  sql:
+    init:
+      mode: never
+      encoding: UTF-8
+      schema-locations: classpath:schema.sql,classpath:message-schema.sql
+      continue-on-error: false
+  jackson:
+    default-property-inclusion: always
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+    sentinel:
+      filter:
+        enabled: false
+      log:
+        dir: ./logs/sentinel
+    openfeign:
+      client:
+        config:
+          smartoffice-user-service:
+            connectTimeout: 1000
+            readTimeout: 2000
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+smartoffice:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:PT2H}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175,http://localhost:18080,http://127.0.0.1:18080}
+  user-service:
+    url: ${USER_SERVICE_URL:http://localhost:8082}
+  booking:
+    qps: ${BOOKING_QPS:20}
+  mq:
+    enabled: ${MQ_ENABLED:false}
+    namesrv-addr: ${ROCKETMQ_NAMESRV_ADDR:localhost:9876}
+    topic: smartoffice-booking-created-v1
+    producer-group: smartoffice-outbox-producer
+    consumer-group: smartoffice-notification-v1
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+logging:
+  level:
+    root: INFO
+    com.geek.smartoffice: INFO

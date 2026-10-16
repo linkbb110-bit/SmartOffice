@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    discovery:
+      enabled: ${NACOS_DISCOVERY_ENABLED:true}
+    nacos:
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        username: ${NACOS_USERNAME:}
+        password: ${NACOS_PASSWORD:}
+smartoffice:
+  routes:
+    user-uri: ${USER_SERVICE_URI:lb://smartoffice-user-service}
+    booking-uri: ${BOOKING_SERVICE_URI:lb://smartoffice-booking-service}

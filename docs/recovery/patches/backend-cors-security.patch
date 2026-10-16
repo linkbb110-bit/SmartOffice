@@ -1,0 +1,66 @@
+diff --git a/src/main/java/com/geek/smartoffice/config/CorsConfig.java b/src/main/java/com/geek/smartoffice/config/CorsConfig.java
+index 99a626d..cd72b3f 100644
+--- a/src/main/java/com/geek/smartoffice/config/CorsConfig.java
++++ b/src/main/java/com/geek/smartoffice/config/CorsConfig.java
+@@ -1,33 +1,32 @@
+ package com.geek.smartoffice.config;
+ 
+-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.context.annotation.Configuration;
+-import org.springframework.core.Ordered;
+ import org.springframework.web.cors.CorsConfiguration;
++import org.springframework.web.cors.CorsConfigurationSource;
+ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+-import org.springframework.web.filter.CorsFilter;
+ 
+ import java.util.List;
+ 
+ @Configuration
+ public class CorsConfig {
+ 
+     @Bean
+-    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
++    public CorsConfigurationSource corsConfigurationSource() {
+         CorsConfiguration configuration = new CorsConfiguration();
+-        configuration.setAllowedOriginPatterns(List.of("*"));
++        configuration.setAllowedOrigins(List.of(
++                "http://localhost:5173",
++                "http://localhost:5174",
++                "http://localhost:5175"
++        ));
+         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+         configuration.setAllowedHeaders(List.of("*"));
+         configuration.setExposedHeaders(List.of("Authorization"));
+         configuration.setAllowCredentials(true);
+         configuration.setMaxAge(3600L);
+ 
+         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+         source.registerCorsConfiguration("/**", configuration);
+-
+-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+-        return bean;
++        return source;
+     }
+ }
+diff --git a/src/main/java/com/geek/smartoffice/config/SecurityConfig.java b/src/main/java/com/geek/smartoffice/config/SecurityConfig.java
+index 4f4c2aa..c4f808d 100644
+--- a/src/main/java/com/geek/smartoffice/config/SecurityConfig.java
++++ b/src/main/java/com/geek/smartoffice/config/SecurityConfig.java
+@@ -4,6 +4,8 @@ import com.geek.smartoffice.common.security.JwtAuthenticationFilter;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.context.annotation.Configuration;
++import org.springframework.http.HttpMethod;
++import org.springframework.security.config.Customizer;
+ import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+ import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+@@ -35,1 +37,2 @@ public class SecurityConfig {
+                 .csrf(AbstractHttpConfigurer::disable)
++                .cors(Customizer.withDefaults())
+@@ -39,1 +42,3 @@ public class SecurityConfig {
+                 .authorizeHttpRequests(auth -> auth
++                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
++                        .requestMatchers("/favicon.ico").permitAll()

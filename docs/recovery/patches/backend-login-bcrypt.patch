@@ -1,0 +1,23 @@
+diff --git a/src/main/java/com/geek/smartoffice/controller/SysUserController.java b/src/main/java/com/geek/smartoffice/controller/SysUserController.java
+--- a/src/main/java/com/geek/smartoffice/controller/SysUserController.java
++++ b/src/main/java/com/geek/smartoffice/controller/SysUserController.java
+@@ -16,0 +17,1 @@
++import org.springframework.security.crypto.password.PasswordEncoder;
+@@ -27,0 +29,2 @@
++    @Autowired
++    private PasswordEncoder passwordEncoder;
+@@ -53,1 +57,1 @@
+-        if (!loginDTO.getPassword().equals(user.getPassword())) {
++        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+diff --git a/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java b/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
+--- a/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
++++ b/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
+@@ -13,0 +14,2 @@
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.security.crypto.password.PasswordEncoder;
+@@ -20,0 +23,3 @@
++    @Autowired
++    private PasswordEncoder passwordEncoder;
++
+@@ -33,0 +39,1 @@
++        user.setPassword(passwordEncoder.encode(dto.getPassword()));

@@ -1,0 +1,31 @@
+diff --git a/src/main/java/com/geek/smartoffice/controller/SysUserController.java b/src/main/java/com/geek/smartoffice/controller/SysUserController.java
+--- a/src/main/java/com/geek/smartoffice/controller/SysUserController.java
++++ b/src/main/java/com/geek/smartoffice/controller/SysUserController.java
+@@ -49,1 +49,1 @@
+-        SysUser user = sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, loginDTO.getUsername()));
++        SysUser user = sysUserService.login(loginDTO.getUsername(), loginDTO.getPassword());
+diff --git a/src/main/java/com/geek/smartoffice/service/SysUserService.java b/src/main/java/com/geek/smartoffice/service/SysUserService.java
+--- a/src/main/java/com/geek/smartoffice/service/SysUserService.java
++++ b/src/main/java/com/geek/smartoffice/service/SysUserService.java
+@@ -12,2 +12,3 @@
+     void registerUser(UserSaveDTO userSaveDTO);
++    SysUser login(String username, String rawPassword);
+     Page<UserVO> pageUsers(UserQueryDTO queryDTO);
+diff --git a/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java b/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
+--- a/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
++++ b/src/main/java/com/geek/smartoffice/service/impl/SysUserServiceImpl.java
+@@ -41,0 +42,14 @@
++
++    @Override
++    public SysUser login(String username, String rawPassword) {
++        SysUser user = getOne(new LambdaQueryWrapper<SysUser>()
++                .eq(SysUser::getUsername, username)
++                .eq(SysUser::getIsDeleted, 0));
++        if (user == null || !StringUtils.hasText(user.getPassword())) {
++            throw new BusinessException(401, "用户名或密码错误");
++        }
++        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
++            throw new BusinessException(401, "用户名或密码错误");
++        }
++        return user;
++    }

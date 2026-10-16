@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:8080}
+spring:
+  application:
+    name: smartoffice-gateway
+  profiles:
+    default: local
+  cloud:
+    discovery:
+      enabled: ${NACOS_DISCOVERY_ENABLED:false}
+    nacos:
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:false}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+smartoffice:
+  routes:
+    user-uri: ${USER_SERVICE_URI:http://localhost:8082}
+    booking-uri: ${BOOKING_SERVICE_URI:http://localhost:8081}

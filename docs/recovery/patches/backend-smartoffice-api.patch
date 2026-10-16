@@ -1,0 +1,185 @@
+diff --git a/src/main/java/com/geek/smartoffice/config/CorsConfig.java b/src/main/java/com/geek/smartoffice/config/CorsConfig.java
+new file mode 100644
+index 0000000..99a626d
+--- /dev/null
++++ b/src/main/java/com/geek/smartoffice/config/CorsConfig.java
+@@ -0,0 +1,33 @@
++package com.geek.smartoffice.config;
++
++import org.springframework.boot.web.servlet.FilterRegistrationBean;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.core.Ordered;
++import org.springframework.web.cors.CorsConfiguration;
++import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
++import org.springframework.web.filter.CorsFilter;
++
++import java.util.List;
++
++@Configuration
++public class CorsConfig {
++
++    @Bean
++    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
++        CorsConfiguration configuration = new CorsConfiguration();
++        configuration.setAllowedOriginPatterns(List.of("*"));
++        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
++        configuration.setAllowedHeaders(List.of("*"));
++        configuration.setExposedHeaders(List.of("Authorization"));
++        configuration.setAllowCredentials(true);
++        configuration.setMaxAge(3600L);
++
++        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
++        source.registerCorsConfiguration("/**", configuration);
++
++        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
++        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
++        return bean;
++    }
++}
+diff --git a/src/main/java/com/geek/smartoffice/controller/OrderController.java b/src/main/java/com/geek/smartoffice/controller/OrderController.java
+new file mode 100644
+index 0000000..dfd9822
+--- /dev/null
++++ b/src/main/java/com/geek/smartoffice/controller/OrderController.java
+@@ -0,0 +1,41 @@
++package com.geek.smartoffice.controller;
++
++import com.geek.smartoffice.common.annotation.Idempotent;
++import com.geek.smartoffice.common.annotation.OperationLog;
++import com.geek.smartoffice.common.annotation.RateLimit;
++import com.geek.smartoffice.common.result.Result;
++import com.geek.smartoffice.model.dto.BookingDTO;
++import com.geek.smartoffice.model.entity.MeetingRoom;
++import com.geek.smartoffice.service.MeetingRoomService;
++import com.geek.smartoffice.service.NotificationService;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.security.core.Authentication;
++import org.springframework.security.core.context.SecurityContextHolder;
++import org.springframework.validation.annotation.Validated;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RestController;
++
++@RestController
++@RequestMapping("/orders")
++public class OrderController {
++
++    @Autowired
++    private MeetingRoomService meetingRoomService;
++
++    @Autowired
++    private NotificationService notificationService;
++
++    @OperationLog("book room")
++    @Idempotent(expireMillis = 3000)
++    @RateLimit(key = "bookRoom", rate = 10, rateInterval = 1)
++    @PostMapping("/book")
++    public Result<Void> bookRoom(@Validated @RequestBody BookingDTO dto) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication == null ? "system" : authentication.getName();
++        MeetingRoom room = meetingRoomService.getRoomDetailSafely(dto.getRoomId());
++        notificationService.sendBookingSuccessEmail(username + "@company.com", room.getRoomName());
++        return Result.success();
++    }
++}
+diff --git a/src/main/java/com/geek/smartoffice/controller/RoomQueryController.java b/src/main/java/com/geek/smartoffice/controller/RoomQueryController.java
+new file mode 100644
+index 0000000..2c94f82
+--- /dev/null
++++ b/src/main/java/com/geek/smartoffice/controller/RoomQueryController.java
+@@ -0,0 +1,69 @@
++package com.geek.smartoffice.controller;
++
++import com.fasterxml.jackson.core.type.TypeReference;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.geek.smartoffice.common.result.Result;
++import com.geek.smartoffice.model.entity.MeetingRoom;
++import com.geek.smartoffice.model.vo.RoomVO;
++import com.geek.smartoffice.service.MeetingRoomService;
++import org.springframework.beans.BeanUtils;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.util.StringUtils;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.List;
++import java.util.stream.Collectors;
++
++@RestController
++@RequestMapping("/rooms")
++public class RoomQueryController {
++
++    @Autowired
++    private MeetingRoomService meetingRoomService;
++
++    @Autowired
++    private ObjectMapper objectMapper;
++
++    @GetMapping("/list")
++    public Result<List<RoomVO>> listRooms() {
++        List<RoomVO> rooms = meetingRoomService.list()
++                .stream()
++                .map(this::toRoomVO)
++                .collect(Collectors.toList());
++        return Result.success(rooms);
++    }
++
++    private RoomVO toRoomVO(MeetingRoom room) {
++        RoomVO vo = new RoomVO();
++        BeanUtils.copyProperties(room, vo);
++        vo.setEquipment(parseEquipment(room.getEquipment()));
++        return vo;
++    }
++
++    private List<String> parseEquipment(String equipment) {
++        if (!StringUtils.hasText(equipment)) {
++            return Collections.emptyList();
++        }
++
++        String text = equipment.trim();
++        if (text.startsWith("[") && text.endsWith("]")) {
++            try {
++                return objectMapper.readValue(text, new TypeReference<List<String>>() {
++                }).stream()
++                        .filter(StringUtils::hasText)
++                        .collect(Collectors.toList());
++            } catch (Exception ignored) {
++                // Fall back to comma-separated parsing for legacy data.
++            }
++        }
++
++        return Arrays.stream(text.split("[,\\uFF0C\\u3001]"))
++                .map(String::trim)
++                .filter(StringUtils::hasText)
++                .collect(Collectors.toList());
++    }
++}
+diff --git a/src/main/java/com/geek/smartoffice/model/vo/RoomVO.java b/src/main/java/com/geek/smartoffice/model/vo/RoomVO.java
+new file mode 100644
+index 0000000..7a713a2
+--- /dev/null
++++ b/src/main/java/com/geek/smartoffice/model/vo/RoomVO.java
+@@ -0,0 +1,18 @@
++package com.geek.smartoffice.model.vo;
++
++import lombok.Data;
++
++import java.util.List;
++
++@Data
++public class RoomVO {
++    private Long id;
++
++    private String roomName;
++
++    private Integer capacity;
++
++    private List<String> equipment;
++
++    private Integer status;
++}

@@ -1,0 +1,7 @@
+smartoffice:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-smartoffice-jwt-secret-change-before-production-2026}
+spring:
+  sql:
+    init:
+      mode: ${DB_INIT_MODE:never}

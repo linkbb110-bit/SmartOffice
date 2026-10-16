@@ -1,0 +1,24 @@
+spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:user-test.sql
+      data-locations: classpath:user-test-data.sql
+  datasource:
+    url: jdbc:h2:mem:smartoffice_user_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+smartoffice:
+  jwt:
+    secret: test-only-smartoffice-secret-key-with-at-least-32-bytes
+    expiration: PT2H
+  cors:
+    allowed-origins: http://localhost:5173
+spring.cloud.nacos.discovery.enabled: false
+spring.cloud.discovery.enabled: false
+management.endpoint.health.probes.enabled: true

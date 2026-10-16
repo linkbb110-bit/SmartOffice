@@ -1,0 +1,238 @@
+name: smartoffice-upgrade
+
+x-java-environment: &java-environment
+  SPRING_PROFILES_ACTIVE: cloud
+  NACOS_SERVER_ADDR: nacos:8848
+  JWT_SECRET: ${JWT_SECRET:?Set a local JWT_SECRET of at least 32 bytes}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:18080,http://127.0.0.1:18080}
+  TZ: Asia/Shanghai
+
+x-java-healthcheck: &java-healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 30
+  start_period: 60s
+
+services:
+  mysql-booking:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BOOKING_DB_ROOT_PASSWORD:?Set BOOKING_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: smartoffice_booking
+      MYSQL_USER: ${BOOKING_DB_USERNAME:-smartoffice_booking}
+      MYSQL_PASSWORD: ${BOOKING_DB_PASSWORD:?Set BOOKING_DB_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - booking_mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/src/main/resources/message-schema.sql:/docker-entrypoint-initdb.d/02-messages.sql:ro
+      - ./backend/src/main/resources/data.sql:/docker-entrypoint-initdb.d/03-demo.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u"$$MYSQL_USER" -D"$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  mysql-user:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${USER_DB_ROOT_PASSWORD:?Set USER_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: smartoffice_user
+      MYSQL_USER: ${USER_DB_USERNAME:-smartoffice_user}
+      MYSQL_PASSWORD: ${USER_DB_PASSWORD:?Set USER_DB_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - user_mysql_data:/var/lib/mysql
+      - ./user-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./user-service/src/main/resources/data.sql:/docker-entrypoint-initdb.d/02-demo.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u"$$MYSQL_USER" -D"$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+    command: [sh, -c, 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  namesrv:
+    image: smartoffice-upgrade-rocketmq:5.3.1
+    build:
+      context: .
+      dockerfile: deploy/upgrade/rocketmq.Dockerfile
+    restart: unless-stopped
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx256m -Xmn128m
+    command: [sh, mqnamesrv]
+    volumes:
+      - namesrv_logs:/home/rocketmq/logs
+    healthcheck:
+      test: [CMD, bash, -c, 'echo >/dev/tcp/127.0.0.1/9876']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  broker:
+    image: smartoffice-upgrade-rocketmq:5.3.1
+    build:
+      context: .
+      dockerfile: deploy/upgrade/rocketmq.Dockerfile
+    restart: unless-stopped
+    environment:
+      NAMESRV_ADDR: namesrv:9876
+      JAVA_OPT_EXT: -Xms512m -Xmx512m -Xmn256m
+    command: [bash, /opt/smartoffice/start-broker.sh]
+    volumes:
+      - ./deploy/upgrade/rocketmq/broker.conf:/opt/smartoffice/broker.conf:ro
+      - ./deploy/upgrade/rocketmq/start-broker.sh:/opt/smartoffice/start-broker.sh:ro
+      - broker_logs:/home/rocketmq/logs
+      - broker_store:/home/rocketmq/store
+    depends_on:
+      namesrv:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, 'sh mqadmin clusterList -n namesrv:9876 2>/dev/null | grep -q upgrade-broker']
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 40s
+
+  nacos:
+    image: nacos/nacos-server:v3.0.3
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      FUNCTION_MODE: naming
+      PREFER_HOST_MODE: ip
+      NACOS_AUTH_ENABLE: "false"
+      NACOS_AUTH_ADMIN_ENABLE: "true"
+      NACOS_AUTH_CONSOLE_ENABLE: "true"
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:?Set a Base64 encoded token with at least 32 decoded bytes}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY:-smartofficeLocalIdentity}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE:?Set NACOS_AUTH_IDENTITY_VALUE}
+      JVM_XMS: 512m
+      JVM_XMX: 512m
+      JVM_XMN: 256m
+    ports:
+      - "127.0.0.1:${NACOS_CONSOLE_HOST_PORT:-18880}:8080"
+    volumes:
+      - nacos_data:/home/nacos/data
+      - nacos_logs:/home/nacos/logs
+    healthcheck:
+      test: [CMD-SHELL, 'curl -fsS http://127.0.0.1:8080/v3/console/health/readiness | grep -Eq ''"data"[[:space:]]*:[[:space:]]*"ok"''']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *java-environment
+      DB_URL: jdbc:mysql://mysql-user:3306/smartoffice_user?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      DB_USERNAME: ${USER_DB_USERNAME:-smartoffice_user}
+      DB_PASSWORD: ${USER_DB_PASSWORD:?Set USER_DB_PASSWORD}
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-healthcheck
+      test: [CMD-SHELL, 'curl -fsS http://127.0.0.1:8082/actuator/health | grep -Eq ''"status"[[:space:]]*:[[:space:]]*"UP"''']
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *java-environment
+      DB_URL: jdbc:mysql://mysql-booking:3306/smartoffice_booking?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      DB_USERNAME: ${BOOKING_DB_USERNAME:-smartoffice_booking}
+      DB_PASSWORD: ${BOOKING_DB_PASSWORD:?Set BOOKING_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+      USER_SERVICE_URL: ""
+      MQ_ENABLED: "true"
+      ROCKETMQ_NAMESRV_ADDR: namesrv:9876
+    depends_on:
+      mysql-booking:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-healthcheck
+      test: [CMD-SHELL, 'curl -fsS http://127.0.0.1:8081/actuator/health | grep -Eq ''"status"[[:space:]]*:[[:space:]]*"UP"''']
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *java-environment
+    ports:
+      - "127.0.0.1:${GATEWAY_HOST_PORT:-18000}:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-healthcheck
+      test: [CMD-SHELL, 'curl -fsS http://127.0.0.1:8080/actuator/health | grep -Eq ''"status"[[:space:]]*:[[:space:]]*"UP"''']
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/upgrade/frontend.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-18080}:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1/healthz]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+# Compose scopes these new volumes under smartoffice-upgrade_. No external/old volumes.
+volumes:
+  booking_mysql_data:
+  user_mysql_data:
+  redis_data:
+  namesrv_logs:
+  broker_logs:
+  broker_store:
+  nacos_data:
+  nacos_logs:
