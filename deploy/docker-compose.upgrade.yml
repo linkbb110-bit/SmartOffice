@@ -25,9 +25,9 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - booking_mysql_data:/var/lib/mysql
-      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./backend/src/main/resources/message-schema.sql:/docker-entrypoint-initdb.d/02-messages.sql:ro
-      - ./backend/src/main/resources/data.sql:/docker-entrypoint-initdb.d/03-demo.sql:ro
+      - ../backend/booking-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../backend/booking-service/src/main/resources/message-schema.sql:/docker-entrypoint-initdb.d/02-messages.sql:ro
+      - ../backend/booking-service/src/main/resources/data.sql:/docker-entrypoint-initdb.d/03-demo.sql:ro
     healthcheck:
       test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u"$$MYSQL_USER" -D"$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
       interval: 5s
@@ -46,8 +46,8 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - user_mysql_data:/var/lib/mysql
-      - ./user-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./user-service/src/main/resources/data.sql:/docker-entrypoint-initdb.d/02-demo.sql:ro
+      - ../backend/user-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../backend/user-service/src/main/resources/data.sql:/docker-entrypoint-initdb.d/02-demo.sql:ro
     healthcheck:
       test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u"$$MYSQL_USER" -D"$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
       interval: 5s
@@ -72,7 +72,7 @@ services:
   namesrv:
     image: smartoffice-upgrade-rocketmq:5.3.1
     build:
-      context: .
+      context: ..
       dockerfile: deploy/upgrade/rocketmq.Dockerfile
     restart: unless-stopped
     environment:
@@ -90,7 +90,7 @@ services:
   broker:
     image: smartoffice-upgrade-rocketmq:5.3.1
     build:
-      context: .
+      context: ..
       dockerfile: deploy/upgrade/rocketmq.Dockerfile
     restart: unless-stopped
     environment:
@@ -98,8 +98,8 @@ services:
       JAVA_OPT_EXT: -Xms512m -Xmx512m -Xmn256m
     command: [bash, /opt/smartoffice/start-broker.sh]
     volumes:
-      - ./deploy/upgrade/rocketmq/broker.conf:/opt/smartoffice/broker.conf:ro
-      - ./deploy/upgrade/rocketmq/start-broker.sh:/opt/smartoffice/start-broker.sh:ro
+      - ./upgrade/rocketmq/broker.conf:/opt/smartoffice/broker.conf:ro
+      - ./upgrade/rocketmq/start-broker.sh:/opt/smartoffice/start-broker.sh:ro
       - broker_logs:/home/rocketmq/logs
       - broker_store:/home/rocketmq/store
     depends_on:
@@ -142,8 +142,8 @@ services:
 
   user-service:
     build:
-      context: .
-      dockerfile: user-service/Dockerfile
+      context: ..
+      dockerfile: deploy/upgrade/user-service.Dockerfile
     restart: unless-stopped
     environment:
       <<: *java-environment
@@ -161,8 +161,8 @@ services:
 
   booking-service:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ..
+      dockerfile: deploy/upgrade/booking-service.Dockerfile
     restart: unless-stopped
     environment:
       <<: *java-environment
@@ -192,8 +192,8 @@ services:
 
   gateway:
     build:
-      context: .
-      dockerfile: gateway/Dockerfile
+      context: ..
+      dockerfile: deploy/upgrade/gateway.Dockerfile
     restart: unless-stopped
     environment:
       <<: *java-environment
@@ -212,7 +212,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: deploy/upgrade/frontend.Dockerfile
     restart: unless-stopped
     ports:

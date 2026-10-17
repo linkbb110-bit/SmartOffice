@@ -1,5 +1,7 @@
 # SmartOffice 真实环境验收报告
 
+> **目录迁移说明（2026-10-17）**：本报告的历史命令、行号及旧路径按原验收版本保留。当前前端在 frontend，后端聚合工程在 backend，原 backend 模块现为 backend/booking-service；Compose/私有部署 env 在 deploy。新启动命令见 [runbook](runbook.md)，完整路径映射与当前验证见 [迁移记录](directory-layout-verification.md)。
+
 > **2026-10-16 修复后的状态**：本页主体为 10 月 14 日部署版本的历史真实验收。后续 R1–R5 已做代码修复和工程回归，但 10 月 16 日 22:39 检查本机 Docker Engine named pipe 不存在；新版本真实 MySQL/Redis/Broker/容器/浏览器回归 **未执行**，不得把下文历史通过数转记为新版本通过。当前证据见 [五项修复验收记录](final-fix-verification.md) 和 [审计报告第 9 章](final-code-review.md#9-五项修复与最终回归2026-10-16)。
 
 日期：2026-10-14（北京时间）。本轮只验收既有升级架构，不新增组件、不大规模重构；仅本地隔离环境，不操作生产、已有业务数据或数据卷，不推送。

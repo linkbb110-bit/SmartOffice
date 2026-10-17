@@ -53,7 +53,7 @@ function localEndpoint(endpoint) {
 async function mysql(label, query, useSchema = true, expectedError = false) {
   if (useSchema && !created) throw new Error('The unique schema has not been created by this run.');
   const databaseOption = useSchema ? ` -D${schema}` : '';
-  const result = await command(['compose', '--env-file', '.env.upgrade', '-f', 'docker-compose.upgrade.yml',
+  const result = await command(['compose', '--env-file', 'deploy/.env.upgrade', '-f', 'deploy/docker-compose.upgrade.yml',
     'exec', '-T', 'mysql-booking', 'sh', '-c',
     `MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -h127.0.0.1 -uroot${databaseOption} --batch --raw --skip-column-names --default-character-set=utf8mb4`], `${query}\n`);
   report.commands.push({ label, database: useSchema ? schema : 'none', sql: query, ...result });
@@ -82,7 +82,7 @@ try {
   await mysql('create-unique-schema', `CREATE DATABASE ${schema} CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`, false);
   created = true;
 
-  const currentSchema = await readFile(resolve(root, 'backend/src/main/resources/schema.sql'), 'utf8');
+  const currentSchema = await readFile(resolve(root, 'backend/booking-service/src/main/resources/schema.sql'), 'utf8');
   const oldSchema = currentSchema.split(/\r?\n/).filter((line) => !/^\s*request_id\s/i.test(line) && !/UNIQUE KEY uk_booking_request/.test(line)).join('\n');
   if (/request_id|uk_booking_request/.test(oldSchema)) throw new Error('Cannot construct the V0 schema without request_id.');
   await mysql('create-v0-tables', oldSchema);

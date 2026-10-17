@@ -1,5 +1,7 @@
 # 前端验证记录（2026-10-14）
 
+> **目录迁移说明（2026-10-17）**：本报告的历史命令、行号及旧路径按原验收版本保留。当前前端在 frontend，后端聚合工程在 backend，原 backend 模块现为 backend/booking-service；Compose/私有部署 env 在 deploy。新启动命令见 [runbook](runbook.md)，完整路径映射与当前验证见 [迁移记录](directory-layout-verification.md)。
+
 现有 Vue 3 / TypeScript / Element Plus 页面保留。房间页增加「我的预约」，支持本人订单列表、已预约/已取消状态与取消；登录页增加普通用户注册入口。预约请求现在携带随机 requestId，成功后关闭弹窗。
 
 预约提交锁在异步表单校验之前生效，校验和请求期间禁用表单与关闭操作。同一操作、相同 payload 的失败重试保留 requestId；字段改变、成功、再次打开弹窗都会清除旧操作标识。取消按钮按订单分别防重复提交，仅在服务端成功后标记已取消，失败保持已预约并可重试。API 错误继续由统一 Axios 拦截器显示。

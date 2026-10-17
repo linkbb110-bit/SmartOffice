@@ -1,5 +1,7 @@
 # 独立本地部署与验证
 
+> **目录迁移说明（2026-10-17）**：本报告的历史命令、行号及旧路径按原验收版本保留。当前前端在 frontend，后端聚合工程在 backend，原 backend 模块现为 backend/booking-service；Compose/私有部署 env 在 deploy。新启动命令见 [runbook](runbook.md)，完整路径映射与当前验证见 [迁移记录](directory-layout-verification.md)。
+
 本配置面向本地演示与升级验证：Java 17、Spring Boot 3.5.13、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0，MySQL 8、Redis 7、RocketMQ 5.3.1、Nacos 3.0.3。Nacos 单机、客户端鉴权关闭且仅作 discovery；RocketMQ 为单 broker remoting 模式。不能将这组配置直接用于生产。
 
 ## 隔离范围和请求路径

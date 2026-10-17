@@ -8,8 +8,8 @@ param(
     [string]$BackendJar,
     [switch]$OneOff,
     [string]$JdkHome = 'C:\Program Files\Java\jdk-17',
-    [string]$ComposeFile = 'docker-compose.upgrade.yml',
-    [string]$EnvFile = '.env.upgrade'
+    [string]$ComposeFile = 'deploy/docker-compose.upgrade.yml',
+    [string]$EnvFile = 'deploy/.env.upgrade'
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -97,7 +97,7 @@ try {
     $composeArguments = @()
     $oneOffImageId = $null
     if ($Mode -eq 'CompileOnly') {
-        if (-not $BackendJar) { $BackendJar = Join-Path $repoRoot 'backend/target/smartoffice-booking-service-1.0.0.jar' }
+        if (-not $BackendJar) { $BackendJar = Join-Path $repoRoot 'backend/booking-service/target/smartoffice-booking-service-1.0.0.jar' }
         $BackendJar = (Resolve-Path -LiteralPath $BackendJar).Path
         $sourceRecord.source = 'host-jar-compile-only'
         $sourceRecord.path = $BackendJar

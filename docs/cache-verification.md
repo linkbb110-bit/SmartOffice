@@ -1,5 +1,7 @@
 # 房间详情缓存与管理验证（2026-10-14）
 
+> **目录迁移说明（2026-10-17）**：本报告的历史命令、行号及旧路径按原验收版本保留。当前前端在 frontend，后端聚合工程在 backend，原 backend 模块现为 backend/booking-service；Compose/私有部署 env 在 deploy。新启动命令见 [runbook](runbook.md)，完整路径映射与当前验证见 [迁移记录](directory-layout-verification.md)。
+
 ## 实现边界
 
 `GET /rooms/{roomId}` 使用 Cache Aside，返回不包含用户凭据的 MeetingRoom 房间记录；列表仍直接查询数据库并返回原 RoomVO。预约和取消的业务判定继续使用数据库及房间行锁，缓存和 Bloom 不参与最终正确性判定。

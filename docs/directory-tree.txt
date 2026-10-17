@@ -1,0 +1,338 @@
+SmartOffice source tree (generated from Git-visible files; private env, dependencies, build output, logs and backups excluded).
+smartoffice-rebuilt/
+├── backend/
+│   ├── .mvn/
+│   │   ├── maven.config
+│   │   └── settings.xml
+│   ├── booking-service/
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   ├── java/
+│   │   │   │   │   └── com/
+│   │   │   │   │       └── geek/
+│   │   │   │   │           └── smartoffice/
+│   │   │   │   │               ├── cache/
+│   │   │   │   │               │   ├── RedisRoomCacheStore.java
+│   │   │   │   │               │   ├── RoomCache.java
+│   │   │   │   │               │   └── RoomCacheStore.java
+│   │   │   │   │               ├── config/
+│   │   │   │   │               │   ├── OpenApiConfig.java
+│   │   │   │   │               │   ├── RedisConfig.java
+│   │   │   │   │               │   └── RoomBloomFilterInitializer.java
+│   │   │   │   │               ├── controller/
+│   │   │   │   │               │   ├── NotificationController.java
+│   │   │   │   │               │   ├── OrderController.java
+│   │   │   │   │               │   └── RoomController.java
+│   │   │   │   │               ├── mapper/
+│   │   │   │   │               │   ├── BookingOrderMapper.java
+│   │   │   │   │               │   └── MeetingRoomMapper.java
+│   │   │   │   │               ├── messaging/
+│   │   │   │   │               │   ├── BookingCreatedEvent.java
+│   │   │   │   │               │   ├── BookingEventConsumer.java
+│   │   │   │   │               │   ├── BookingOutboxService.java
+│   │   │   │   │               │   ├── EventPublisher.java
+│   │   │   │   │               │   ├── OutboxRelay.java
+│   │   │   │   │               │   ├── OutboxStore.java
+│   │   │   │   │               │   └── RocketMqRuntime.java
+│   │   │   │   │               ├── model/
+│   │   │   │   │               │   ├── dto/
+│   │   │   │   │               │   │   ├── BookingDTO.java
+│   │   │   │   │               │   │   └── RoomSaveDTO.java
+│   │   │   │   │               │   ├── entity/
+│   │   │   │   │               │   │   ├── BookingOrder.java
+│   │   │   │   │               │   │   └── MeetingRoom.java
+│   │   │   │   │               │   └── vo/
+│   │   │   │   │               │       ├── BookingVO.java
+│   │   │   │   │               │       └── RoomVO.java
+│   │   │   │   │               ├── protection/
+│   │   │   │   │               │   └── BookingTrafficGuard.java
+│   │   │   │   │               ├── remote/
+│   │   │   │   │               │   ├── RemoteUserVerifier.java
+│   │   │   │   │               │   └── UserClient.java
+│   │   │   │   │               ├── service/
+│   │   │   │   │               │   ├── impl/
+│   │   │   │   │               │   │   ├── BookingServiceImpl.java
+│   │   │   │   │               │   │   ├── BookingWriteServiceImpl.java
+│   │   │   │   │               │   │   ├── MeetingRoomServiceImpl.java
+│   │   │   │   │               │   │   └── RoomBloomFilterServiceImpl.java
+│   │   │   │   │               │   ├── BookingCsvExporter.java
+│   │   │   │   │               │   ├── BookingService.java
+│   │   │   │   │               │   ├── BookingTimeRule.java
+│   │   │   │   │               │   ├── BookingWriteService.java
+│   │   │   │   │               │   ├── MeetingRoomService.java
+│   │   │   │   │               │   └── RoomBloomFilterService.java
+│   │   │   │   │               └── SmartOfficeApplication.java
+│   │   │   │   └── resources/
+│   │   │   │       ├── application-cloud.yml
+│   │   │   │       ├── application-local.yml
+│   │   │   │       ├── application-test.yml
+│   │   │   │       ├── application.yml
+│   │   │   │       ├── data.sql
+│   │   │   │       ├── message-schema.sql
+│   │   │   │       └── schema.sql
+│   │   │   └── test/
+│   │   │       ├── java/
+│   │   │       │   └── com/
+│   │   │       │       └── geek/
+│   │   │       │           └── smartoffice/
+│   │   │       │               ├── cache/
+│   │   │       │               │   ├── MeetingRoomAdministrationTransactionTest.java
+│   │   │       │               │   ├── RoomBloomFilterInitializerTest.java
+│   │   │       │               │   └── RoomCacheTest.java
+│   │   │       │               ├── integration/
+│   │   │       │               │   ├── BookingApiSecurityTest.java
+│   │   │       │               │   ├── BookingCancellationTest.java
+│   │   │       │               │   ├── BookingConcurrencyTest.java
+│   │   │       │               │   ├── ConcurrentIdempotencyTest.java
+│   │   │       │               │   ├── ConsumerGroupIdempotencyTest.java
+│   │   │       │               │   ├── DatabaseTestConfig.java
+│   │   │       │               │   └── MessagingReliabilityTest.java
+│   │   │       │               ├── messaging/
+│   │   │       │               │   └── RocketMqConsumerConfigurationTest.java
+│   │   │       │               ├── protection/
+│   │   │       │               │   └── BookingTrafficGuardTest.java
+│   │   │       │               ├── remote/
+│   │   │       │               │   ├── FeignUserClientHttpTest.java
+│   │   │       │               │   └── RemoteUserVerifierTest.java
+│   │   │       │               └── service/
+│   │   │       │                   ├── BookingCsvExporterTest.java
+│   │   │       │                   ├── BookingServiceImplTest.java
+│   │   │       │                   ├── BookingTimeRuleTest.java
+│   │   │       │                   ├── BookingWriteServiceImplTest.java
+│   │   │       │                   └── MeetingRoomServiceImplTest.java
+│   │   │       └── resources/
+│   │   │           ├── mockito-extensions/
+│   │   │           │   └── org.mockito.plugins.MockMaker
+│   │   │           ├── api-test-data.sql
+│   │   │           ├── db-test.sql
+│   │   │           └── message-test.sql
+│   │   └── pom.xml
+│   ├── gateway/
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   ├── java/
+│   │   │   │   │   └── com/
+│   │   │   │   │       └── geek/
+│   │   │   │   │           └── smartoffice/
+│   │   │   │   │               └── gateway/
+│   │   │   │   │                   ├── ClientIdentityHeaderFilter.java
+│   │   │   │   │                   ├── GatewayApplication.java
+│   │   │   │   │                   └── GatewayRoutes.java
+│   │   │   │   └── resources/
+│   │   │   │       ├── application-cloud.yml
+│   │   │   │       └── application.yml
+│   │   │   └── test/
+│   │   │       └── java/
+│   │   │           └── com/
+│   │   │               └── geek/
+│   │   │                   └── smartoffice/
+│   │   │                       └── gateway/
+│   │   │                           └── GatewayRoutingTest.java
+│   │   └── pom.xml
+│   ├── shared/
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   └── java/
+│   │   │   │       └── com/
+│   │   │   │           └── geek/
+│   │   │   │               └── smartoffice/
+│   │   │   │                   ├── common/
+│   │   │   │                   │   ├── annotation/
+│   │   │   │                   │   │   └── OperationLog.java
+│   │   │   │                   │   ├── aspect/
+│   │   │   │                   │   │   └── OperationLogAspect.java
+│   │   │   │                   │   ├── enums/
+│   │   │   │                   │   │   ├── BookingStatus.java
+│   │   │   │                   │   │   ├── RoomStatus.java
+│   │   │   │                   │   │   └── UserRole.java
+│   │   │   │                   │   ├── exception/
+│   │   │   │                   │   │   ├── BusinessException.java
+│   │   │   │                   │   │   └── GlobalExceptionHandler.java
+│   │   │   │                   │   ├── result/
+│   │   │   │                   │   │   └── Result.java
+│   │   │   │                   │   └── security/
+│   │   │   │                   │       ├── AuthenticatedUser.java
+│   │   │   │                   │       ├── JsonAccessDeniedHandler.java
+│   │   │   │                   │       ├── JsonAuthenticationEntryPoint.java
+│   │   │   │                   │       ├── JwtAuthenticationFilter.java
+│   │   │   │                   │       ├── JwtProperties.java
+│   │   │   │                   │       └── JwtService.java
+│   │   │   │                   └── config/
+│   │   │   │                       ├── CorsConfig.java
+│   │   │   │                       ├── SecurityConfig.java
+│   │   │   │                       └── TimeConfig.java
+│   │   │   └── test/
+│   │   │       ├── java/
+│   │   │       │   └── com/
+│   │   │       │       └── geek/
+│   │   │       │           └── smartoffice/
+│   │   │       │               └── common/
+│   │   │       │                   ├── aspect/
+│   │   │       │                   │   └── OperationLogAspectTest.java
+│   │   │       │                   ├── result/
+│   │   │       │                   │   └── ResultTest.java
+│   │   │       │                   └── security/
+│   │   │       │                       ├── JwtServiceTest.java
+│   │   │       │                       └── JwtValidationTest.java
+│   │   │       └── resources/
+│   │   │           └── mockito-extensions/
+│   │   │               └── org.mockito.plugins.MockMaker
+│   │   └── pom.xml
+│   ├── user-service/
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   ├── java/
+│   │   │   │   │   └── com/
+│   │   │   │   │       └── geek/
+│   │   │   │   │           └── smartoffice/
+│   │   │   │   │               ├── controller/
+│   │   │   │   │               │   └── SysUserController.java
+│   │   │   │   │               ├── mapper/
+│   │   │   │   │               │   └── SysUserMapper.java
+│   │   │   │   │               ├── model/
+│   │   │   │   │               │   ├── dto/
+│   │   │   │   │               │   │   ├── LoginDTO.java
+│   │   │   │   │               │   │   └── RegisterDTO.java
+│   │   │   │   │               │   └── entity/
+│   │   │   │   │               │       └── SysUser.java
+│   │   │   │   │               ├── service/
+│   │   │   │   │               │   ├── impl/
+│   │   │   │   │               │   │   └── SysUserServiceImpl.java
+│   │   │   │   │               │   └── SysUserService.java
+│   │   │   │   │               └── user/
+│   │   │   │   │                   └── UserApplication.java
+│   │   │   │   └── resources/
+│   │   │   │       ├── application-cloud.yml
+│   │   │   │       ├── application-local.yml
+│   │   │   │       ├── application-test.yml
+│   │   │   │       ├── application.yml
+│   │   │   │       ├── data.sql
+│   │   │   │       └── schema.sql
+│   │   │   └── test/
+│   │   │       ├── java/
+│   │   │       │   └── com/
+│   │   │       │       └── geek/
+│   │   │       │           └── smartoffice/
+│   │   │       │               ├── service/
+│   │   │       │               │   └── SysUserServiceImplTest.java
+│   │   │       │               └── user/
+│   │   │       │                   └── UserApiTest.java
+│   │   │       └── resources/
+│   │   │           ├── mockito-extensions/
+│   │   │           │   └── org.mockito.plugins.MockMaker
+│   │   │           ├── user-test-data.sql
+│   │   │           └── user-test.sql
+│   │   └── pom.xml
+│   └── pom.xml
+├── deploy/
+│   ├── migrations/
+│   │   └── V1__booking_request_id.sql
+│   ├── upgrade/
+│   │   ├── rocketmq/
+│   │   │   ├── broker.conf
+│   │   │   └── start-broker.sh
+│   │   ├── tests/
+│   │   │   ├── middleware-boundary-harness.ps1
+│   │   │   └── probe-boundary.test.mjs
+│   │   ├── booking-service.Dockerfile
+│   │   ├── frontend.Dockerfile
+│   │   ├── gateway.Dockerfile
+│   │   ├── nginx.conf
+│   │   ├── real-api-check.mjs
+│   │   ├── real-failure-check.mjs
+│   │   ├── real-migration-check.mjs
+│   │   ├── real-mq-failure-check.mjs
+│   │   ├── real-redis-lua-check.mjs
+│   │   ├── RealMiddlewareProbe.java
+│   │   ├── rocketmq.Dockerfile
+│   │   ├── run-middleware-probe.ps1
+│   │   ├── smoke-booking-data.sql
+│   │   ├── smoke-local.ps1
+│   │   └── user-service.Dockerfile
+│   ├── .env.upgrade.example
+│   ├── docker-compose.dev.yml
+│   ├── docker-compose.upgrade.yml
+│   └── run-host.sh
+├── docs/
+│   ├── recovery/
+│   │   └── patches/
+│   │       ├── backend-cors-allowed-origins.patch
+│   │       ├── backend-cors-security.patch
+│   │       ├── backend-login-bcrypt.patch
+│   │       ├── backend-login-service-fix.patch
+│   │       ├── backend-redis-jsr310.patch
+│   │       └── backend-smartoffice-api.patch
+│   ├── superpowers/
+│   │   ├── plans/
+│   │   │   ├── 2026-08-22-smartoffice-rebuild.md
+│   │   │   ├── 2026-10-14-real-integration.md
+│   │   │   ├── 2026-10-14-smartoffice-upgrade.md
+│   │   │   └── 2026-10-17-project-directory-layout.md
+│   │   └── specs/
+│   │       ├── 2026-08-22-smartoffice-rebuild-design.md
+│   │       └── 2026-10-14-smartoffice-upgrade-design.md
+│   ├── architecture.md
+│   ├── auth-verification.md
+│   ├── browser-qa.md
+│   ├── cache-verification.md
+│   ├── core-flows.md
+│   ├── deployment-verification.md
+│   ├── directory-layout-verification.md
+│   ├── directory-tree.txt
+│   ├── final-code-review.md
+│   ├── final-fix-verification.md
+│   ├── frontend-verification.md
+│   ├── gateway-verification.md
+│   ├── interview-notes.md
+│   ├── project-structure.md
+│   ├── real-integration-report.md
+│   ├── review-findings.md
+│   ├── runbook.md
+│   ├── tech-decisions.md
+│   └── upgrade-progress.md
+├── frontend/
+│   ├── frontend-tests/
+│   │   ├── fixtures/
+│   │   │   └── request-browser.mjs
+│   │   ├── booking-flow.test.mjs
+│   │   ├── gateway-env.test.mjs
+│   │   ├── login-feedback.test.mjs
+│   │   └── order-cancellation.test.mjs
+│   ├── public/
+│   │   └── .gitkeep
+│   ├── src/
+│   │   ├── api/
+│   │   │   ├── auth.ts
+│   │   │   ├── orders.ts
+│   │   │   └── rooms.ts
+│   │   ├── components/
+│   │   │   ├── BookModal.vue
+│   │   │   └── MyOrders.vue
+│   │   ├── router/
+│   │   │   └── index.ts
+│   │   ├── styles/
+│   │   │   └── global.css
+│   │   ├── types/
+│   │   │   └── room.ts
+│   │   ├── utils/
+│   │   │   ├── auth.ts
+│   │   │   ├── bookingSubmission.ts
+│   │   │   ├── orderCancellation.ts
+│   │   │   └── request.ts
+│   │   ├── views/
+│   │   │   ├── Login.vue
+│   │   │   └── RoomList.vue
+│   │   ├── App.vue
+│   │   └── main.ts
+│   ├── .env.development.example
+│   ├── .env.production.example
+│   ├── env.d.ts
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── .dockerignore
+├── .gitignore
+└── README.md

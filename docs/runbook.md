@@ -4,53 +4,59 @@
 
 Java17、Maven3.9.x、Node.js（本机验证24.11.1）与 npm；完整部署需要运行中的 Docker Desktop Linux engine/Compose。PowerShell 启动脚本使用标准 Windows 进程和 Hidden 窗口，本地冒烟使用 PowerShell7。Compose 含10服务，首次镜像/依赖下载需要网络，Docker应分配足够内存；本轮未测定最低内存或实际启动耗时。
 
-本轮当前目录原无 Git，已建立 `feature/smartoffice-upgrade`（没有远程/提交）。原源码归档 `.upgrade-backup/original-2026-10-14.zip`；另有保留目录结构的 `original-sources-layout-2026-10-14.zip`，旧环境文件单独保留 `.env.development.original`/`.env.production.original`。这些备份与真实环境文件被 git/docker ignore。恢复应解压到独立目录核对，避免覆盖正在使用的项目。
+目录迁移后 Vite 配置名为 `frontend/vite.config.ts`，保留 `--configLoader native`。宿主使用已验证的 Node 24.11.1，Node 22 至少需 22.18 默认 TypeScript 支持（[官方说明](https://nodejs.org/docs/latest-v22.x/api/typescript.html#modules-typescript)）；旧缓存 Node 22 镜像也须核对实际版本。本轮 Engine 不可用，不能把宿主构建成功称为 Docker Node 22 镜像构建成功。
 
-不自动连接现有数据库。升级 Compose 使用两个新 MySQL、独立账号/新项目卷，原 `docker-compose.dev.yml` 和原数据卷保留。`deploy/run-host.sh` 是原单体部署示例，升级版使用本页和 `docker-compose.upgrade.yml`。任何真实云部署不在本次授权范围。
+项目已有本地稳定基线 `a29823e`，2026-10-17 在 `codex/project-directory-layout` 分支分离前后端目录，没有推送。原源码归档 `.upgrade-backup/original-2026-10-14.zip`；另有保留目录结构的 `original-sources-layout-2026-10-14.zip`，旧环境文件单独保留 `.env.development.original`/`.env.production.original`。这些备份与真实环境文件被 git/docker ignore。恢复应解压到独立目录核对，避免覆盖正在使用的项目。
+
+不自动连接现有数据库。升级 Compose 使用两个新 MySQL、独立账号/新项目卷，原 `deploy/docker-compose.dev.yml` 和原数据卷保留。`deploy/run-host.sh` 是原单体部署示例，升级版使用本页和 `deploy/docker-compose.upgrade.yml`。任何真实云部署不在本次授权范围。
 
 ## 构建与 IDEA
 
-在项目根目录执行，避免只导入旧 backend 模块而漏掉 shared/user/gateway：
+从仓库根目录分别进入后端和前端；避免只导入 booking-service 而漏掉 shared/user/gateway：
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+Push-Location backend
 mvn -B -ntp clean verify
+Pop-Location
+Push-Location frontend
 npm ci
 npm test
 npm run build
+Pop-Location
 ```
 
-已有 node_modules 且依赖未改时，可直接 test/build，不必重复 npm ci。IDEA 重新载入根 `pom.xml`，Maven runner/importer 使用 Java17。机器 Oracle javapath shim 曾无输出；显式 JAVA_HOME 可避免选错启动器。根 `.mvn/settings.xml` 覆盖旧 HTTP mirror 为 HTTPS，不改全局 settings；Surefire 固定3.5.4。仓库移动模块后首次使用 clean verify 去除旧产物，不使用任何 Git destructive clean。
+已有 frontend/node_modules 且依赖未改时，可在 frontend 直接 test/build，不必重复 npm ci。IDEA 打开 `backend/pom.xml` 作为 Maven 工程，Maven runner/importer 使用 Java17，应加载四个子模块。机器 Oracle javapath shim 曾无输出；显式 JAVA_HOME 可避免选错启动器。`backend/.mvn/settings.xml` 使用 HTTPS mirror，不改全局 settings；Surefire 固定3.5.4。Maven 命令的 cwd 为 backend，前端 npm 命令的 cwd 为 frontend；不使用任何 Git destructive clean。
 
-可执行 JAR：user-service/target/smartoffice-user-service-1.0.0.jar，backend/target/smartoffice-booking-service-1.0.0.jar，gateway/target/smartoffice-gateway-1.0.0.jar。根构建不跳测试。H2 driver 为 test scope，不被打入生产服务 JAR。
+可执行 JAR：backend/user-service/target/smartoffice-user-service-1.0.0.jar，backend/booking-service/target/smartoffice-booking-service-1.0.0.jar，backend/gateway/target/smartoffice-gateway-1.0.0.jar。后端聚合构建不跳测试。H2 driver 为 test scope，不被打入生产服务 JAR。
 
 ## 一键完整本地 Docker
 
-先确认 `docker version` 同时包含 Server。早期daemon未启动的阻塞已经恢复，本轮实际验证Linux Engine29.7.2、Compose5.4.0及十容器healthy；仍应在每次启动前检查当前状态，Compose config本身只代表静态解析成功。
+从仓库根执行本节命令。先确认 Docker endpoint 为本地 pipe/socket，且 `docker version` 同时包含 Server。2026-10-14 曾验证十容器 healthy；2026-10-17 目录整理时本地 Engine 管道不存在，不能沿用历史健康状态。Compose config 只代表静态解析成功。
 
 首次创建私有环境文件（已有文件保留）：
 
 ```powershell
-if (-not (Test-Path -LiteralPath '.env.upgrade')) {
+if (-not (Test-Path -LiteralPath 'deploy/.env.upgrade')) {
     function New-LocalSecret {
         $taskBytes = New-Object byte[] 48
         $taskRng = [Security.Cryptography.RandomNumberGenerator]::Create()
         try { $taskRng.GetBytes($taskBytes) } finally { $taskRng.Dispose() }
         [Convert]::ToBase64String($taskBytes)
     }
-    $taskEnvText = Get-Content -LiteralPath '.env.upgrade.example' -Raw
+    $taskEnvText = Get-Content -LiteralPath 'deploy/.env.upgrade.example' -Raw
     foreach ($taskKey in @('BOOKING_DB_ROOT_PASSWORD','BOOKING_DB_PASSWORD','USER_DB_ROOT_PASSWORD',
         'USER_DB_PASSWORD','REDIS_PASSWORD','JWT_SECRET','NACOS_AUTH_TOKEN','NACOS_AUTH_IDENTITY_VALUE')) {
         $taskValue = New-LocalSecret
         $taskEnvText = [regex]::Replace($taskEnvText, "(?m)^$taskKey=.*$", "$taskKey=$taskValue")
     }
-    [IO.File]::WriteAllText((Join-Path $PWD '.env.upgrade'),$taskEnvText)
+    [IO.File]::WriteAllText((Join-Path $PWD 'deploy/.env.upgrade'),$taskEnvText)
 }
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml config --quiet
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml build
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml up -d --wait --wait-timeout 360
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml ps
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml config --quiet
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml build
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml up -d --wait --wait-timeout 360
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml ps
 ```
 
 访问 [前端](http://localhost:18080)、[Gateway健康](http://localhost:18000/actuator/health)、[Nacos控制台](http://localhost:18880)。演示账号 admin/user 密码123456来自原 demo BCrypt 数据；只用于隔离本地演示。可以自行注册 USER；没有注册 ADMIN 接口。Nacos控制台首次管理员初始化按其界面执行。
@@ -82,13 +88,13 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 
 浏览器成功后，冒烟共9项且报告 browser=passed；正式冒烟运行中失败报告为 passed=false，不沿用旧结果（Java/H2路径等启动前参数错误直接抛出，应先修正参数）。桌面1366×900与手机390×844验证内容、截图和限制见 [browser-qa.md](browser-qa.md)。只允许访问本轮 loopback 地址，无外部账号或云服务。冒烟 JAR 正在运行时不要重新打包，以免 Windows 文件锁冲突。
 
-若使用真实本地 MySQL/Redis直接运行 JAR，先由操作者建立独立库和账号，按 SQL 初始化。分别设置各进程 DB_URL/DB_USERNAME/DB_PASSWORD，同一 JWT_SECRET；user 8082、booking8081、Gateway8080。local 模式默认直连，MQ_ENABLED=false；Vue `npm run dev` 默认 localhost8080，可用 VITE_GATEWAY_URL 修改。`.env.development/.production` API已改 `/api`；示例文件也如此。前端对外只访问同源 `/api`，不使用容器主机名。
+若使用真实本地 MySQL/Redis直接运行 JAR，先由操作者建立独立库和账号，按 SQL 初始化。分别设置各进程 DB_URL/DB_USERNAME/DB_PASSWORD，同一 JWT_SECRET；user 8082、booking8081、Gateway8080。local 模式默认直连，MQ_ENABLED=false；Vue `npm run dev` 默认 localhost8080，可用 VITE_GATEWAY_URL 修改。`frontend/.env.development` / `frontend/.env.production` API已改 `/api`；示例文件也如此。前端对外只访问同源 `/api`，不使用容器主机名。
 
 ## 已有数据库增量
 
 本轮未迁移用户原有业务库，仅在新建验收schema中实际验证V1增量迁移及旧fixture保留。单体数据迁移应先由操作者备份并只对本地副本操作：复制 sys_user 到用户库（保留 id/密码哈希/角色），复制 meeting_room/booking_order 到预约库。保留订单的 user_id 引用，不重新编号。
 
-`deploy/migrations/V1__booking_request_id.sql` 是一次性的 ADD COLUMN/唯一键，需要先检查列/索引是否已存在；旧行requestId为NULL，保留全部订单。再执行 additive `backend/src/main/resources/message-schema.sql` 建消息表。旧历史订单不会自动补造创建事件。schema.sql 的 CREATE IF NOT EXISTS 不会修改已存在表，因此不能替代 ALTER 迁移。不要重跑 demo data 去覆盖已有用户身份，也不要删除数据卷。
+`deploy/migrations/V1__booking_request_id.sql` 是一次性的 ADD COLUMN/唯一键，需要先检查列/索引是否已存在；旧行requestId为NULL，保留全部订单。再执行 additive `backend/booking-service/src/main/resources/message-schema.sql` 建消息表。旧历史订单不会自动补造创建事件。schema.sql 的 CREATE IF NOT EXISTS 不会修改已存在表，因此不能替代 ALTER 迁移。不要重跑 demo data 去覆盖已有用户身份，也不要删除数据卷。
 
 ## 运行验收与常见故障
 
@@ -102,18 +108,18 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 - Docker broker仅公告容器内网地址；宿主机直连MQ需要另设本地网络/公告配置，不能把当前默认Compose当成宿主SDK可达环境。
 - Windows构建EPERM/测试attach失败：本轮由标准权限批准执行本地验证；未修改ACL、node_modules或禁止的系统权限。IDEA正常本地终端复跑并查看实际退出码。
 
-停止新项目可用 `docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml stop`。不提供删卷或清理用户数据的命令。
+停止新项目可用 `docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml stop`。不提供删卷或清理用户数据的命令。
 
 ## 真实环境验收命令（2026-10-14新增）
 
-本机Engine已经正常运行，私有`.env.upgrade`及八个升级项目卷已经存在。继续使用当前文件，不重新生成已有MySQL账号密码。完整实际验收和失败历史见[real-integration-report.md](real-integration-report.md)，本节命令不代表每次重跑自动通过。
+先检查本机 Engine 当前状态；私有环境与八个升级项目卷来自历史验收，继续使用，不重新生成已有 MySQL 账号密码。Compose 与私有 env 已归入 deploy，固定 smartoffice-upgrade 项目名不变。完整实际验收和失败历史见[real-integration-report.md](real-integration-report.md)，本节命令不代表目录迁移后已自动通过。
 
 ```powershell
 docker --context desktop-linux version
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml config -q
-docker compose --progress plain --env-file .env.upgrade -f docker-compose.upgrade.yml build
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml up -d --pull never --no-build --wait --wait-timeout 360
-docker compose --env-file .env.upgrade -f docker-compose.upgrade.yml ps
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml config -q
+docker compose --progress plain --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml build
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml up -d --pull never --no-build --wait --wait-timeout 360
+docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml ps
 ```
 
 Docker未启动时可正常执行`docker desktop start --timeout 45`，不使用恢复出厂或删除WSL/卷。前端`http://127.0.0.1:18080`，Gateway`http://127.0.0.1:18000`，Nacos console`http://127.0.0.1:18880`。Compose基础镜像仍可能需要公共网络；本机公共token鉴权超时已通过当前进程使用现有系统代理解决，不更改全局配置或TLS。只在需要时使用下面模式，finally恢复原变量：
@@ -128,7 +134,7 @@ try {
   $env:HTTPS_PROXY = $systemProxy.AbsoluteUri
   $containerProxy = [UriBuilder]::new($systemProxy)
   $containerProxy.Host = 'host.docker.internal'
-  docker compose --parallel 1 --progress plain --env-file .env.upgrade -f docker-compose.upgrade.yml build `
+  docker compose --parallel 1 --progress plain --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.yml build `
     --build-arg "HTTP_PROXY=$($containerProxy.Uri.AbsoluteUri)" `
     --build-arg "HTTPS_PROXY=$($containerProxy.Uri.AbsoluteUri)"
   if ($LASTEXITCODE -ne 0) { throw '镜像构建失败，请保留日志排查。' }

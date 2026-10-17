@@ -1,5 +1,7 @@
 # Gateway 验证记录（2026-10-14）
 
+> **目录迁移说明（2026-10-17）**：本报告的历史命令、行号及旧路径按原验收版本保留。当前前端在 frontend，后端聚合工程在 backend，原 backend 模块现为 backend/booking-service；Compose/私有部署 env 在 deploy。新启动命令见 [runbook](runbook.md)，完整路径映射与当前验证见 [迁移记录](directory-layout-verification.md)。
+
 网关使用独立 WebFlux 模块，不依赖 shared 的 MVC 或 Spring Security 自动配置。JWT 验证与身份判定由后端执行；网关只清理客户端伪造的内部身份头并保留 Authorization。
 
 ## 预定路由与配置

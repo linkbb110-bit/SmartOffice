@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test frontend-tests/*.test.mjs",
-    "dev": "vite --host 0.0.0.0 --config vite.config.mjs --configLoader native",
-    "build": "vue-tsc --noEmit && vite build --config vite.config.mjs --configLoader native",
-    "preview": "vite preview --host 0.0.0.0 --config vite.config.mjs --configLoader native"
+    "dev": "vite --host 0.0.0.0 --config vite.config.ts --configLoader native",
+    "build": "vue-tsc --noEmit && vite build --config vite.config.ts --configLoader native",
+    "preview": "vite preview --host 0.0.0.0 --config vite.config.ts --configLoader native"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

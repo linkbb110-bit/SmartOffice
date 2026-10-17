@@ -32,7 +32,7 @@ if (target.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes
 }
 baseUrl = target.href.replace(/\/$/, '');
 const runId = `fail_${Date.now()}_${randomBytes(5).toString('hex')}`;
-const compose = ['compose', '--env-file', '.env.upgrade', '-f', 'docker-compose.upgrade.yml'];
+const compose = ['compose', '--env-file', 'deploy/.env.upgrade', '-f', 'deploy/docker-compose.upgrade.yml'];
 const outputDirectory = resolve(root, 'logs/real-integration');
 const outputFile = resolve(outputDirectory, `real-failure-${mode}-result.json`);
 const historyFile = resolve(outputDirectory, `real-failure-${mode}.${runId}.json`);

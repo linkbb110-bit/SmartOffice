@@ -6,6 +6,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $taskRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$taskFrontendRoot = Join-Path $taskRoot 'frontend'
 if (-not $JavaHome) { throw '先设置 JAVA_HOME 为 Java17 路径。' }
 $taskJava = Join-Path $JavaHome 'bin/java.exe'
 if (-not (Test-Path -LiteralPath $taskJava) -or -not (Test-Path -LiteralPath $H2Jar)) {
@@ -30,7 +31,7 @@ if ($WithFrontend) {
 }
 function Start-LocalJava([string]$name, [string]$relativeJar, [string[]]$properties) {
     $taskJar = Join-Path $taskRoot $relativeJar
-    if (-not (Test-Path -LiteralPath $taskJar)) { throw "请先 mvn clean verify：$relativeJar 不存在" }
+    if (-not (Test-Path -LiteralPath $taskJar)) { throw "请先在 backend 目录执行 mvn clean verify：$relativeJar 不存在" }
     $taskArgs = @('-cp', "$taskJar;$H2Jar", 'org.springframework.boot.loader.launch.JarLauncher',
         '--server.address=127.0.0.1', '--server.port=0', '--spring.cloud.nacos.discovery.enabled=false',
         '--spring.cloud.discovery.enabled=false', "--smartoffice.cors.allowed-origins=$taskCorsOrigin",
@@ -61,26 +62,26 @@ function Assert-LocalApi([bool]$passed, [string]$description) {
     $taskChecks.Add($description)
 }
 try {
-    $taskUser = Start-LocalJava 'user' 'user-service/target/smartoffice-user-service-1.0.0.jar' @(
+    $taskUser = Start-LocalJava 'user' 'backend/user-service/target/smartoffice-user-service-1.0.0.jar' @(
         '--spring.profiles.active=test', '--spring.datasource.url=jdbc:h2:mem:smoke_user;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE',
-        '--spring.sql.init.mode=always', "--spring.sql.init.schema-locations=file:$taskRoot/user-service/src/test/resources/user-test.sql",
-        "--spring.sql.init.data-locations=file:$taskRoot/user-service/src/main/resources/data.sql")
-    $taskBooking = Start-LocalJava 'booking' 'backend/target/smartoffice-booking-service-1.0.0.jar' @(
+        '--spring.sql.init.mode=always', "--spring.sql.init.schema-locations=file:$taskRoot/backend/user-service/src/test/resources/user-test.sql",
+        "--spring.sql.init.data-locations=file:$taskRoot/backend/user-service/src/main/resources/data.sql")
+    $taskBooking = Start-LocalJava 'booking' 'backend/booking-service/target/smartoffice-booking-service-1.0.0.jar' @(
         '--spring.profiles.active=test', '--spring.datasource.url=jdbc:h2:mem:smoke_booking;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE',
-        '--spring.sql.init.mode=always', "--spring.sql.init.schema-locations=file:$taskRoot/backend/src/test/resources/db-test.sql,file:$taskRoot/backend/src/test/resources/message-test.sql",
+        '--spring.sql.init.mode=always', "--spring.sql.init.schema-locations=file:$taskRoot/backend/booking-service/src/test/resources/db-test.sql,file:$taskRoot/backend/booking-service/src/test/resources/message-test.sql",
         "--spring.sql.init.data-locations=file:$taskRoot/deploy/upgrade/smoke-booking-data.sql",
         "--smartoffice.user-service.url=$taskUser", '--smartoffice.mq.enabled=false',
         '--spring.data.redis.host=127.0.0.1', '--spring.data.redis.port=1', '--management.health.redis.enabled=false')
-    $taskGateway = Start-LocalJava 'gateway' 'gateway/target/smartoffice-gateway-1.0.0.jar' @(
+    $taskGateway = Start-LocalJava 'gateway' 'backend/gateway/target/smartoffice-gateway-1.0.0.jar' @(
         '--spring.profiles.active=local', "--smartoffice.routes.user-uri=$taskUser", "--smartoffice.routes.booking-uri=$taskBooking")
     $taskApi = "$taskGateway/api"
     if ($WithFrontend) {
         $env:VITE_GATEWAY_URL = $taskGateway
         $taskNode = (Get-Command node -ErrorAction Stop).Source
-        $taskVite = Join-Path $taskRoot 'node_modules/vite/bin/vite.js'
-        $taskViteArgs = @($taskVite,'--host','127.0.0.1','--port',"$taskFrontendPort",'--strictPort','--config','vite.config.mjs','--configLoader','native') |
+        $taskVite = Join-Path $taskFrontendRoot 'node_modules/vite/bin/vite.js'
+        $taskViteArgs = @($taskVite,'--host','127.0.0.1','--port',"$taskFrontendPort",'--strictPort','--config','vite.config.ts','--configLoader','native') |
             ForEach-Object { '"' + $_.Replace('"','\"') + '"' }
-        $taskFrontend = Start-Process -FilePath $taskNode -ArgumentList $taskViteArgs -WorkingDirectory $taskRoot `
+        $taskFrontend = Start-Process -FilePath $taskNode -ArgumentList $taskViteArgs -WorkingDirectory $taskFrontendRoot `
             -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $taskLogs 'frontend.out.log') `
             -RedirectStandardError (Join-Path $taskLogs 'frontend.err.log')
         $taskProcesses.Add($taskFrontend)

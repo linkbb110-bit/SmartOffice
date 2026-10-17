@@ -1,11 +1,9 @@
 .worktrees/
 node_modules/
 dist/
-backend/target/
 .idea/
 *.iml
 .env
-backend/.env
 .DS_Store
 .upgrade-backup/
 *.log
@@ -13,5 +11,4 @@ backend/.env
 .env.*
 !.env.*.example
 logs/
-backend/logs/
 .superpowers/

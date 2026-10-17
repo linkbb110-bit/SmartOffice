@@ -1,10 +1,12 @@
 # 项目介绍与面试追问（基于真实实现）
 
+> 2026-10-17 已迁为 frontend 与 backend 四模块工程，以下关键源码路径已更新。10 月 16 日修复回归为 Java 110、前端 15 项通过；目录迁移后的结果见 [迁移验收](directory-layout-verification.md)。文中的真实中间件/浏览器数量指 10 月 14 日历史部署，不是新目录下已重新验收。
+
 ## 可用于简历的介绍
 
 SmartOffice（云智办）是会议室预约系统。我在原有 Java17 / Vue3 项目上强化预约一致性，采用数据库房间行锁、READ_COMMITTED、用户请求键幂等与取消CAS，并通过事务 Outbox 连接 RocketMQ 通知/审计业务。系统渐进拆分为 Gateway、用户服务与预约服务，支持 Nacos发现、OpenFeign用户有效性检查和 Sentinel预约限流。Redis详情缓存包含空值、防击穿、版本Lua防旧回填与异常降级。
 
-本轮工程证据：Java17四模块98个不同测试、前端8个行为测试、类型检查与生产构建通过；完整Docker十容器healthy，真实MySQL/Redis/RocketMQ/Nacos验收已完成，API17项和当前镜像Edge桌面/手机9项通过。真实MySQL行锁/回滚、Redis停机降级、Broker发送失败/重启、消费者异常/重启都有SQL、消息offset和日志证据。详情见[real-integration-report.md](real-integration-report.md)，不把本机集成验收说成生产上线或容量压测。
+2026-10-14 历史工程证据：Java17四模块98个不同测试、前端8个行为测试、类型检查与生产构建通过；完整Docker十容器healthy，真实MySQL/Redis/RocketMQ/Nacos验收已完成，API17项和当前镜像Edge桌面/手机9项通过。真实MySQL行锁/回滚、Redis停机降级、Broker发送失败/重启、消费者异常/重启都有SQL、消息offset和日志证据。详情见[real-integration-report.md](real-integration-report.md)，不把本机集成验收说成生产上线或容量压测。
 
 简历可以选择以下三条，按实际参与内容改写，不加未经测量的性能数字：
 
@@ -16,18 +18,18 @@ SmartOffice（云智办）是会议室预约系统。我在原有 Java17 / Vue3 
 
 | 亮点 | 关键位置 | 可以解释什么 |
 |---|---|---|
-| 时间段互斥 | backend/.../service/impl/BookingWriteServiceImpl.java、mapper/MeetingRoomMapper.java、BookingOrderMapper.java | 同房间行锁，不把会议室当库存；半开区间冲突 |
-| 提交与分布式锁 | backend/.../service/impl/BookingServiceImpl.java | 独立事务代理返回后再解锁，watchdog、Redis失败最终由DB兜底 |
+| 时间段互斥 | backend/booking-service/.../service/impl/BookingWriteServiceImpl.java、mapper/MeetingRoomMapper.java、BookingOrderMapper.java | 同房间行锁，不把会议室当库存；半开区间冲突 |
+| 提交与分布式锁 | backend/booking-service/.../service/impl/BookingServiceImpl.java | 独立事务代理返回后再解锁，watchdog、Redis失败最终由DB兜底 |
 | 幂等 | BookingDTO.requestId、BookingOrderMapper.findByRequest、booking_order唯一键 | 同键同参数返回同ID，异参数409；MyBatis一级缓存锁后复查陷阱 |
 | 取消与删除竞争 | BookingWriteServiceImpl.cancel、MeetingRoomServiceImpl.deleteRoom | 所有权、CAS、同房间锁、活动订单禁删，逻辑删除保留历史 |
-| 缓存 | backend/.../cache/RoomCache.java、RedisRoomCacheStore.java | 空值短TTL，加载锁，UUID版本与Lua，失效失败的TTL收敛边界 |
-| 可靠消息 | backend/.../messaging/BookingOutboxService.java、OutboxStore.java、OutboxRelay.java | 本地事务Outbox、租约所有者条件更新、发送与标记崩溃窗口 |
+| 缓存 | backend/booking-service/.../cache/RoomCache.java、RedisRoomCacheStore.java | 空值短TTL，加载锁，UUID版本与Lua，失效失败的TTL收敛边界 |
+| 可靠消息 | backend/booking-service/.../messaging/BookingOutboxService.java、OutboxStore.java、OutboxRelay.java | 本地事务Outbox、租约所有者条件更新、发送与标记崩溃窗口 |
 | 消费业务幂等 | messaging/BookingEventConsumer.java、RocketMqRuntime.java | 订单行锁+receipt，通知/审计同事务，重试与最早offset |
-| 真实跨服务需求 | backend/.../remote/UserClient.java、RemoteUserVerifier.java | 只验证新预约有效用户，JWT传递、超时503、身份变化401 |
-| 服务保护 | backend/.../protection/BookingTrafficGuard.java | 实际SDK entry、本地QPS规则、限流请求不执行写操作 |
-| 身份与密码 | shared/.../common/security/JwtService.java、user-service/.../SysUserServiceImpl.java、RegisterDTO.java | 签名/过期/claims边界、BCrypt字节限制、注册固定USER |
-| 网关边界 | gateway/.../GatewayRoutes.java、ClientIdentityHeaderFilter.java | 同源/api、路由白名单、伪造身份头移除，后端仍自验JWT |
-| 前端重试 | src/utils/bookingSubmission.ts、components/BookModal.vue、MyOrders.vue | 同payload复用requestId、校验前防双击、取消UI和服务幂等 |
+| 真实跨服务需求 | backend/booking-service/.../remote/UserClient.java、RemoteUserVerifier.java | 只验证新预约有效用户，JWT传递、超时503、身份变化401 |
+| 服务保护 | backend/booking-service/.../protection/BookingTrafficGuard.java | 实际SDK entry、本地QPS规则、限流请求不执行写操作 |
+| 身份与密码 | backend/shared/.../common/security/JwtService.java、backend/user-service/.../SysUserServiceImpl.java、RegisterDTO.java | 签名/过期/claims边界、BCrypt字节限制、注册固定USER |
+| 网关边界 | backend/gateway/.../GatewayRoutes.java、ClientIdentityHeaderFilter.java | 同源/api、路由白名单、伪造身份头移除，后端仍自验JWT |
+| 前端重试 | frontend/src/utils/bookingSubmission.ts、frontend/src/components/BookModal.vue、MyOrders.vue | 同payload复用requestId、校验前防双击、取消UI和服务幂等 |
 
 `...` 代表 `src/main/java/com/geek/smartoffice`；定位时可直接按类名在IDEA搜索。
 

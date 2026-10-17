@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 // Real Redis-only supplement. This does not validate Java serialization, Spring clients, or Redisson locks.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const sourcePath = resolve(root, 'backend/src/main/java/com/geek/smartoffice/cache/RedisRoomCacheStore.java');
+const sourcePath = resolve(root, 'backend/booking-service/src/main/java/com/geek/smartoffice/cache/RedisRoomCacheStore.java');
 const outputDirectory = resolve(root, 'logs/real-integration');
 const runId = `${Date.now()}-${randomUUID().slice(0, 8)}`;
 const roomId = (8_000_000_000_000_000n + BigInt(Date.now()) * 100n + BigInt(Math.floor(Math.random() * 100))).toString();
@@ -57,7 +57,7 @@ function verifyDockerTarget() {
   for (const key of ['DOCKER_CONTEXT', 'DOCKER_HOST', 'DOCKER_TLS', 'DOCKER_TLS_VERIFY', 'DOCKER_CERT_PATH']) delete env[key];
   dockerTarget = { endpoint, env };
   const ids = checkedOutput(localDocker('compose', '--project-name', 'smartoffice-upgrade',
-    '--env-file', resolve(root, '.env.upgrade'), '-f', resolve(root, 'docker-compose.upgrade.yml'),
+    '--env-file', resolve(root, 'deploy/.env.upgrade'), '-f', resolve(root, 'deploy/docker-compose.upgrade.yml'),
     'ps', '--quiet', 'redis')).split(/\s+/).filter(Boolean);
   if (ids.length !== 1 || !/^[a-f0-9]{12,64}$/.test(ids[0])) throw new Error('One existing Redis container is required');
   const container = JSON.parse(checkedOutput(localDocker('inspect', '--format', '{{json .}}', ids[0])));

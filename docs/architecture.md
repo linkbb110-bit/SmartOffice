@@ -1,6 +1,6 @@
 # SmartOffice 最终架构
 
-更新日期：2026-10-14。这是已有系统的渐进升级，本地演示与工程验证用途；真实中间件启动的验证状态见 upgrade-progress.md。
+目录更新日期：2026-10-17。前端工程位于 frontend，Maven 聚合工程位于 backend，部署入口位于 deploy；本次只调整目录，不变更服务边界。本地演示与工程验证用途；本次验证状态见 directory-layout-verification.md，下面真实中间件结果为历史证据。
 
 四个 Maven 模块已编译为共享库和三个独立服务 JAR。2026-10-14完整Docker十容器实际启动并healthy；真实MySQL8.0.46、Redis7.4.11、RocketMQ5.3.1、Nacos3.0.3、Gateway/Feign发现调用和Sentinel限流均已验收，当前镜像Edge浏览器链路通过。工程H2/Mock测试另行保留，不计入真实中间件结果；命令与边界见[real-integration-report.md](real-integration-report.md)。
 
@@ -25,12 +25,12 @@ flowchart LR
 
 | 目录 / artifact | 责任 | 写入数据 |
 |---|---|---|
-| 根 / smartoffice-parent | Boot 与 Cloud BOM、Java17、模块聚合、统一测试配置 | 无 |
-| shared / smartoffice-shared | JWT、角色与身份、Result、异常处理、Spring Security/CORS、AOP 基础 | 无；不共享 Mapper/数据库实体 |
-| user-service / smartoffice-user-service | 登录、注册、当前有效用户查询 | 仅 sys_user |
-| backend / smartoffice-booking-service | 会议室、预约、取消、缓存、限流、消息生产/消费、管理员导出 | meeting_room、booking_order、booking_outbox、message_consumption、booking_notification、business_event_audit |
-| gateway / smartoffice-gateway | 路由、/api 前缀处理、移除伪造身份头、健康检查 | 无；使用 WebFlux，不依赖 MVC shared |
-| src | 保留 Vue 前端，增加注册/我的预约/取消/幂等提交 | 浏览器保存 JWT |
+| backend / smartoffice-parent | Boot 与 Cloud BOM、Java17、模块聚合、统一测试配置 | 无 |
+| backend/shared / smartoffice-shared | JWT、角色与身份、Result、异常处理、Spring Security/CORS、AOP 基础 | 无；不共享 Mapper/数据库实体 |
+| backend/user-service / smartoffice-user-service | 登录、注册、当前有效用户查询 | 仅 sys_user |
+| backend/booking-service / smartoffice-booking-service | 会议室、预约、取消、缓存、限流、消息生产/消费、管理员导出 | meeting_room、booking_order、booking_outbox、message_consumption、booking_notification、business_event_audit |
+| backend/gateway / smartoffice-gateway | 路由、/api 前缀处理、移除伪造身份头、健康检查 | 无；使用 WebFlux，不依赖 MVC shared |
+| frontend/src | Vue 前端：注册/我的预约/取消/幂等提交 | 浏览器保存 JWT |
 
 两个业务库不做跨库写或联表事务。订单里的 user_id 是用户服务身份引用；创建前通过 Feign 验证，不在事务里修改用户数据。用户与订单不需要分布式事务。房间与预约必须保留在同一服务，否则房间锁与状态更新会变成跨服务一致性问题。
 

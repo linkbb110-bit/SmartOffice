@@ -135,3 +135,11 @@ Task 5：前端早期 Node 行为测试6/6与构建通过；最终8/8结果见�
 - 消息跨组测试使用实际消费者类及 H2/事务，覆盖新旧组/并发、已存在部分记录、冲突拒绝和 receipt 失败回滚。此前消息审计探针启动失败的记录保留，不能用新测试冒称真实 Broker 通过。
 - Docker 22:39 只读检查仍指向本地 desktop-linux，Engine pipe 不存在。本轮没有新的真实数据库/Broker/Redis/浏览器验收；10 月 14 日历史验收不可当作新版本结果。
 - 完成状态、探针最终回归与只读复核、本地提交和敏感文件检查统一记在 `final-fix-verification.md`；`final-code-review.md` 保留原问题证据并在第 9 章记录修复增量。开发范围到五项修复为止，不继续扩展功能。
+
+## 2026-10-17 前后端目录整理收尾
+
+- 基于稳定提交 `a29823e` 在 `codex/project-directory-layout` 整理：Vue 工程归入 frontend，Maven 父工程及四个模块归入 backend，原预约模块更名为 booking-service；Compose 和 Dockerfile 归入 deploy。只调整目录与引用，Java/SQL/业务前端及原测试保持原内容。
+- 新布局 Maven verify 110/110，前端 15/15、类型检查/构建与开发 HTTP 通过；安装复用本地缓存，未验证全新联网下载。探针隔离 57/57、四种 Compose config 和 40 项源路径检查通过。
+- 三个真实 JAR 与 Vite 已完成 8/8 冒烟，覆盖 Vite `/api` → Gateway → 业务服务、HTTP Feign、预约幂等、取消及 Outbox。使用新建内存 H2、MQ/Nacos 关闭，未执行浏览器，不能冒充真实中间件验收。
+- Docker 两次只读检查均为本地 desktop-linux pipe 不存在，因此本次镜像构建、容器启动/健康及真实中间件回归未执行。保留所有原数据、卷、私有环境、备份与历史日志。
+- 独立目录复核无遗留问题，206 个基线文件全部保留，完整源码树 211 个文件；README、project-structure、runbook 和验收文档已同步。敏感配置、缓存和产物继续忽略，目录整理仅创建本地提交，不推送；完整证据见 [directory-layout-verification.md](directory-layout-verification.md)。
