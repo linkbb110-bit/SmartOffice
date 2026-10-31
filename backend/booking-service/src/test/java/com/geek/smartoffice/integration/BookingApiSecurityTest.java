@@ -20,6 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+// MockMvc 在进程内经过真实 MVC 与 Security 过滤链，不需要启动外部 HTTP 客户端。
+// @MockBean 替换 Redis 和远程校验依赖；JWT 仍由真实组件签发，便于分别验证 401 认证失败与 403 权限不足。
 @SpringBootTest(classes=SmartOfficeApplication.class,properties={
  "spring.sql.init.mode=always","spring.sql.init.schema-locations=classpath:db-test.sql,classpath:message-test.sql",
  "spring.sql.init.data-locations=classpath:api-test-data.sql","spring.cloud.sentinel.enabled=false"})

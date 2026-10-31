@@ -15,6 +15,8 @@ public class BookingDTO {
     @Positive
     private Long roomId;
 
+    // 可选幂等键：省略时每次按新预约处理；提供时，同一用户重试相同房间、主题和时段会重放原 ID。
+    // @Pattern 约束非 null 值的格式，并不要求必填；与原预约内容不同的复用请求由业务层拒绝。
     @Pattern(regexp = "[A-Za-z0-9_-]{1,64}", message = "requestId 必须为1到64位字母、数字、下划线或连字符")
     private String requestId;
 

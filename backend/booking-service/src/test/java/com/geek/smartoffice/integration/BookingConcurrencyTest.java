@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// 绕过 Redis 直接并发调用数据库写服务，验证数据库自身仍能防止重叠预约并支持幂等重试。
 @SpringBootTest(classes = DatabaseTestConfig.class)
 @ActiveProfiles("test")
 @Sql({"/db-test.sql","/message-test.sql"})
@@ -37,11 +38,14 @@ class BookingConcurrencyTest {
 
     @Test
     void overlappingWritesHaveExactlyOneWinnerWithoutRedis() throws Exception {
+        // CountDownLatch 是一次性的起跑闸门：任务先 await，主线程 countDown 后一起竞争预约。
+        // Future.get 等待每个任务完成，并把工作线程中的异常带回测试线程，避免漏掉并发失败。
         var pool = Executors.newFixedThreadPool(12);
         var start = new CountDownLatch(1);
         var results = new ArrayList<Future<Boolean>>();
         try {
             for (long user = 1; user <= 12; user++) {
+                // Lambda 只能捕获不再变化的局部变量，因此为本轮用户 ID 保存一个 final 副本。
                 final long userId = user;
                 results.add(pool.submit(() -> {
                     assertTrue(start.await(10, TimeUnit.SECONDS));

@@ -17,6 +17,8 @@ public class MeetingRoom {
     private Integer capacity;
     private String equipment;
     private Integer status;
+    // MyBatis-Plus 的逻辑删除标记：通用删除方法更新标记，通用查询会应用未删除条件。
+    // 自定义 @Select SQL 仍需自行处理删除语义，房间行锁查询由服务层检查此字段。
     @TableLogic
     private Integer isDeleted;
     private LocalDateTime createdAt;

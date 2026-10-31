@@ -15,6 +15,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/*
+ * Mapper 使用模拟对象隔离数据库，而编码器使用真实 BCrypt，专门验证密码校验成功与失败后的服务结果。
+ * any(Wrapper.class) 不约束查询条件内容，因此这些用例不能替代对真实 SQL、逻辑删除及唯一约束的验证。
+ */
 class SysUserServiceImplTest {
 
     @Test

@@ -57,6 +57,8 @@ class MeetingRoomServiceImplTest {
     void createRoomPublishesNewIdToBloom() {
         MeetingRoomMapper mapper = mock(MeetingRoomMapper.class);
         RoomBloomFilterService bloom = mock(RoomBloomFilterService.class);
+        // 真实 Mapper 插入后会把生成的主键写回实体；Mock 不会自动做这一步。
+        // doAnswer 因而同时模拟“影响一行”和“回填 ID”，让后续 Bloom 发布能拿到正确房间 ID。
         doAnswer(invocation -> {
             MeetingRoom room = invocation.getArgument(0);
             room.setId(9L);
@@ -105,7 +107,7 @@ class MeetingRoomServiceImplTest {
         var valid = roomDto();
         valid.setEquipment(List.of("😀".repeat(496)));
         var service = service(mapper, mock(RoomBloomFilterService.class));
-        assertEquals(9L, service.createRoom(valid)); // MySQL utf8mb4: 496 + 4 = 500 characters.
+        assertEquals(9L, service.createRoom(valid)); // MySQL utf8mb4 按字符计数：496 个表情加 JSON 结构共 500 个字符。
         var invalid = roomDto();
         invalid.setEquipment(List.of("😀".repeat(497)));
         assertEquals(HttpStatus.BAD_REQUEST,
@@ -124,6 +126,8 @@ class MeetingRoomServiceImplTest {
 
     private MeetingRoomServiceImpl service(MeetingRoomMapper mapper, RoomBloomFilterService bloom) {
         RoomCache cache = mock(RoomCache.class);
+        // getArgument(1) 取得第二个实参，即尚未执行的数据库查询 Supplier。
+        // 在缓存桩的应答中调用 get()，保留服务的数据装配逻辑，同时隔离真实 Redis。
         when(cache.get(anyLong(), any())).thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get());
         return new MeetingRoomServiceImpl(mapper, bloom, new ObjectMapper(), cache, mock(BookingOrderMapper.class), Clock.systemUTC());
     }

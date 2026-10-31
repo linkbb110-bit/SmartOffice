@@ -22,6 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/*
+ * 使用 test 配置启动应用上下文，MockMvc 在进程内经过过滤器、MVC 参数校验及业务层，不需监听真实端口。
+ * JdbcTemplate 直接观察或修改测试表，与 Mapper 的逻辑删除查询形成对照，验证请求响应和落库状态是否一致。
+ * 这些测试会写入测试数据库；BeforeEach 为每个用例清表，避免前一用例的数据影响当前断言。
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -73,6 +78,10 @@ class UserApiTest {
                 .content("{\"username\":\"alice\",\"password\":\"password123\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data").isNumber());
         Long id = jdbc.queryForObject("SELECT id FROM sys_user WHERE username='alice'", Long.class);
+        /*
+         * 故意签发与数据库名称、角色不同的有效令牌，区分“令牌通过认证”和“/me 回查当前资料”。
+         * 下面只断言接口返回数据库身份且没有密码字段，不据此断言其他接口的权限会同步更新。
+         */
         String token = jwt.createToken(id, "stale-name", com.geek.smartoffice.common.enums.UserRole.ADMIN);
         mvc.perform(get("/users/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.userId").value(id))
@@ -93,6 +102,10 @@ class UserApiTest {
     }
 
     @Test void bcryptRejectsOver72Utf8BytesAndAcceptsExactBoundary() throws Exception {
+        /*
+         * “密”以 UTF-8 编码占三个字节，25 个是 75 字节，24 个刚好是 72 字节。
+         * 两者都未超过 @Size 的 72 长度上限，因此能专门检验自定义字节限制，再以 73 个 ASCII 字符补充长度边界。
+         */
         ObjectMapper json = new ObjectMapper();
         mvc.perform(post("/users/register").contentType("application/json").content(json.writeValueAsString(
                 java.util.Map.of("username", "over_bytes", "password", "密".repeat(25)))))
@@ -108,6 +121,7 @@ class UserApiTest {
     }
 
     @Test void registrationProtectsDeletedUserUniqueName() throws Exception {
+        // 直接插入已删除行，保留物理唯一键占位；注册冲突不应因 Mapper 查询会隐藏该行而被绕过。
         jdbc.update("INSERT INTO sys_user(username,password,role,is_deleted) VALUES(?,?,?,1)", "alice", passwords.encode("password123"), "USER");
         mvc.perform(post("/users/register").contentType("application/json")
                 .content("{\"username\":\"alice\",\"password\":\"password123\"}"))
@@ -116,6 +130,10 @@ class UserApiTest {
     }
 
     @Test void malformedClaimsReturn401WithoutServerError() throws Exception {
+        /*
+         * 使用测试配置相同的密钥签名，并故意省略身份字段，确保失败原因是业务载荷校验而非坏签名。
+         * 最终断言经完整过滤器链返回 401，验证解析异常能按匿名请求处理，而不会变成服务器错误。
+         */
         var key = Keys.hmacShaKeyFor("test-only-smartoffice-secret-key-with-at-least-32-bytes".getBytes(StandardCharsets.UTF_8));
         String missingRole = Jwts.builder().subject("alice").claim("uid", 1L)
                 .expiration(Date.from(Instant.now().plusSeconds(60))).signWith(key).compact();

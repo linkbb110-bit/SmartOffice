@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Security 过滤器链将已认证但权限不足的请求交给此处理器，直接写出 HTTP 403 和 Result JSON。
+ * 此时不依赖控制器返回值或 MVC 异常处理；先设置编码和媒体类型，再由 ObjectMapper 序列化响应体。
+ */
 @Component
 @RequiredArgsConstructor
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {

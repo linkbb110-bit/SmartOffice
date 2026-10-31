@@ -15,6 +15,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
+// 使用真实数据库事务，并用发布 Lambda 模拟 Broker 成功或失败，验证 Outbox 重试和消费幂等。
 @SpringBootTest(classes=DatabaseTestConfig.class)
 @ActiveProfiles("test")
 @Sql({"/db-test.sql","/message-test.sql"})
@@ -35,6 +36,8 @@ class MessagingReliabilityTest {
     }
     @Test void bookingRollbackAlsoRollsBackOutbox() {
         var template=new TransactionTemplate(tx);
+        // 写入服务加入回调开启的外层事务；setRollbackOnly 即使不抛异常，也要求最终回滚。
+        // 同时检查订单与 Outbox 都消失，验证它们参与的是同一个数据库事务。
         template.executeWithoutResult(status->{ booking.createBookingInsideLock(BookingConcurrencyTest.booking(10,11),1L); status.setRollbackOnly(); });
         assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM booking_order",Integer.class));
         assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM booking_outbox",Integer.class));
@@ -60,9 +63,10 @@ class MessagingReliabilityTest {
     }
     @Test void publishFailureIsRetriedAndCommittedOrderSurvives() throws Exception {
         event();
-        // Make this delivery attempt due explicitly. H2 TIMESTAMP rounds nanoseconds
-        // to microseconds, so an immediate scan can otherwise precede available_at.
+        // H2 会将时间精度舍入到微秒；主动把消息设为到期，避免立即扫描时尚未达到 available_at。
         jdbc.update("UPDATE booking_outbox SET available_at = '2000-01-01 00:00:00'");
+        // dispatchOnce 接收 EventPublisher 函数式接口，Lambda 可代替真实 MQ 发送器。
+        // 此处抛异常模拟发送失败；后续返回 broker-id 模拟成功，以验证持久化重试状态的变化。
         relay.dispatchOnce(e->{throw new IllegalStateException("broker unavailable");});
         assertEquals("PENDING",jdbc.queryForObject("SELECT status FROM booking_outbox",String.class));
         assertEquals(1,jdbc.queryForObject("SELECT attempts FROM booking_outbox",Integer.class));

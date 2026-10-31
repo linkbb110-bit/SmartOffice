@@ -1,5 +1,7 @@
 # 本地运行、验证与故障排查
 
+2026-10-20 本机 Docker 恢复、历史数据盘保留、宿主 IDEA/Knife4j 的配置与实际结果见 [docker-development-recovery.md](docker-development-recovery.md)。IDEA 模式需要新增 host-dev 覆盖；不要把该覆盖与全部 Java 容器同时启动。
+
 ## 环境与安全边界
 
 Java17、Maven3.9.x、Node.js（本机验证24.11.1）与 npm；完整部署需要运行中的 Docker Desktop Linux engine/Compose。PowerShell 启动脚本使用标准 Windows 进程和 Hidden 窗口，本地冒烟使用 PowerShell7。Compose 含10服务，首次镜像/依赖下载需要网络，Docker应分配足够内存；本轮未测定最低内存或实际启动耗时。

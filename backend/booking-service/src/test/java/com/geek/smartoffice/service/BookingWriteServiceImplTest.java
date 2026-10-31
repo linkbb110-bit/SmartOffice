@@ -79,6 +79,8 @@ class BookingWriteServiceImplTest {
 
         service.createBookingInsideLock(booking(), 2L);
 
+        // <BookingOrder> 显式指定泛型，让 argThat 的 Lambda 参数按订单实体解析。
+        // 这里检查传给 Mapper 的对象内容；Mapper 是 Mock，因此不会执行真实 INSERT。
         verify(orderMapper).insert(org.mockito.ArgumentMatchers.<BookingOrder>argThat(order ->
                 order.getRoomId().equals(1L)
                         && order.getUserId().equals(2L)

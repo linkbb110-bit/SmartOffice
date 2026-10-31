@@ -39,8 +39,10 @@ class RoomCacheTest {
     void invalidationDuringDatabaseLoadRejectsOldRefill() {
         FakeStore store = new FakeStore();
         RoomCache cache = new RoomCache(store);
+        // 在 loader 回调返回前主动失效，精确模拟“数据库查询尚未结束，另一个请求已更新缓存版本”的时序。
+        // 不必真的启动并发线程，也能检查这个竞态下旧结果是否被拒绝回填。
         MeetingRoom result = cache.get(1, () -> { cache.invalidate(1); return room("old"); });
-        assertEquals("old", result.getRoomName()); // In-flight read may complete; it must not pollute future reads.
+        assertEquals("old", result.getRoomName()); // 已在途的读取可以返回旧值，但不能回填缓存影响后续读取。
         assertEquals(1, store.rejectedRefills);
         assertFalse(store.read(1).present());
         assertEquals("new", cache.get(1, () -> room("new")).getRoomName());
@@ -102,6 +104,9 @@ class RoomCacheTest {
         return room;
     }
 
+    // 单线程模拟缓存内容、TTL、版本和故障；advanceSeconds 推进逻辑时间，无需实际等待过期。
+    // Lease 的关闭 Lambda 只递增计数，用于检查 finally 是否释放租约；它不实现真实互斥锁。
+    // 此替身验证 Java 层的调用顺序与降级分支，Redis Lua 的原子执行需由独立验证覆盖。
     private static final class FakeStore implements RoomCacheStore {
         private final Map<Long, CachedRoom> values = new HashMap<>();
         private final Map<Long, Long> valueExpiry = new HashMap<>();

@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
+// 让真实 Feign 客户端请求本地 HTTP 桩，检查 Bearer 透传与错误映射，不依赖注册中心。
 @SpringBootTest(classes=FeignUserClientHttpTest.Config.class,webEnvironment=SpringBootTest.WebEnvironment.NONE,
  properties={"spring.cloud.nacos.discovery.enabled=false","spring.cloud.discovery.enabled=false","spring.cloud.sentinel.enabled=false","knife4j.enable=false"})
 class FeignUserClientHttpTest {

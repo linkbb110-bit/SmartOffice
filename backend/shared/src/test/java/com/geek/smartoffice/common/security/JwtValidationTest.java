@@ -19,6 +19,11 @@ class JwtValidationTest {
     private static final String SECRET = "test-only-smartoffice-secret-key-with-at-least-32-bytes";
     private final JwtService service = new JwtService(new JwtProperties(SECRET, Duration.ofHours(2)));
 
+    /*
+     * 每次调用都返回新的构造器，先准备身份、未过期时间和有效签名，再由各用例修改其中一个条件。
+     * 这样缺字段或字段类型错误仍能通过签名校验，测试才会到达 JwtService 的业务载荷验证阶段。
+     * 签名错误、过期的用例则专门覆盖库自身的校验，两类失败最终都应表现为 JwtException。
+     */
     private JwtBuilder claims() {
         return Jwts.builder().subject("alice").claim("uid", 7L).claim("role", "USER")
                 .expiration(Date.from(Instant.now().plusSeconds(60)))
@@ -29,6 +34,7 @@ class JwtValidationTest {
         assertThrows(JwtException.class, () -> service.parseToken(claims().claim("uid", null).compact()));
     }
 
+    // 参数化测试为 ValueSource 的每个值分别执行一次，复用同一拒绝规则来覆盖不同边界。
     @ParameterizedTest @ValueSource(longs = {0, -1})
     void rejectsNonPositiveUserId(long id) {
         assertThrows(JwtException.class, () -> service.parseToken(claims().claim("uid", id).compact()));

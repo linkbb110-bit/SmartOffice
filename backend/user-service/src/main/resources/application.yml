@@ -9,7 +9,8 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL:jdbc:mysql://localhost:3306/smartoffice_user?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:smartoffice_user}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD}
+
   sql:
     init:
       mode: never

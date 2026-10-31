@@ -57,6 +57,8 @@ npm run dev
 
 ## Windows PowerShell：后端与 IDEA
 
+2026-10-20 的 **Docker 中间件 + IDEA 宿主 Java + Knife4j** 开发方式见 [开发环境恢复与每日命令](docs/docker-development-recovery.md)。该方式使用独立 host-dev Compose 覆盖及 ignored 宿主配置，与下方全容器演示分开启动。
+
 ```powershell
 # 新终端，从仓库根进入 backend
 Set-Location backend

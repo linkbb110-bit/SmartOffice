@@ -18,6 +18,8 @@ import static org.mockito.Mockito.*;
 class RoomBloomFilterInitializerTest {
     @Test
     void redisBloomFailureDoesNotPreventApplicationStartup() {
+        // 这里直接 new 初始化器，不经过 Spring/MyBatis 的自动装配阶段。
+        // 先登记实体表信息，让初始化器中的 Lambda 查询能解析属性对应的数据库列。
         TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new MybatisConfiguration(), "cache-test"), MeetingRoom.class);
         MeetingRoomMapper mapper = mock(MeetingRoomMapper.class);
         when(mapper.selectList(any())).thenReturn(List.of());

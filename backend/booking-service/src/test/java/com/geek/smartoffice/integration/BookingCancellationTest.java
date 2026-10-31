@@ -43,6 +43,8 @@ class BookingCancellationTest {
             for (int i=0;i<7;i++) cancels.add(pool.submit(() -> {
                 start.await(); service.cancel(id,1L,false); return null;
             }));
+            // 新预约可能先获锁而遇到旧订单，也可能在取消提交后成功；两种调度顺序都合法。
+            // 因而断言有效预约不超过一条，而不是要求并发的新预约一定成功。
             Future<?> replacement = pool.submit(() -> {
                 start.await();
                 try { service.createBookingInsideLock(BookingConcurrencyTest.booking(10,11),2L); }

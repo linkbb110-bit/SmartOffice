@@ -33,6 +33,8 @@ class BookingServiceImplTest {
         redissonClient = mock(RedissonClient.class);
         lock = mock(RLock.class);
         bookingWriteService = mock(BookingWriteService.class);
+        // 固定在样例预约之前的时间，服务校验读取的也是这个注入时钟。
+        // 避免真实日期推进后，同一个测试意外变成“预约时间已过去”的失败场景。
         Clock clock = Clock.fixed(Instant.parse("2026-08-22T08:00:00Z"), ZoneOffset.UTC);
         service = new BookingServiceImpl(bloom, redissonClient, bookingWriteService, null, clock);
     }
@@ -72,6 +74,7 @@ class BookingServiceImplTest {
 
         service.book(dto, 8L);
 
+        // 用调用顺序验证先完成写入再解锁；此处使用 Mock，不验证真实事务提交。
         var order = inOrder(bookingWriteService, lock);
         order.verify(bookingWriteService).createBookingInsideLock(dto, 8L);
         order.verify(lock).unlock();

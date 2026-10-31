@@ -1,0 +1,36 @@
+# Combine with docker-compose.upgrade.yml. Only start the six infrastructure
+# services listed in the runbook; Java applications run on the Windows host.
+name: smartoffice-host-dev
+
+services:
+  mysql-booking:
+    ports:
+      - "127.0.0.1:13306:3306"
+  mysql-user:
+    ports:
+      - "127.0.0.1:13307:3306"
+  redis:
+    ports:
+      - "127.0.0.1:16379:6379"
+  nacos:
+    ports:
+      - "127.0.0.1:18848:8848"
+      - "127.0.0.1:19848:9848"
+      - "127.0.0.1:19849:9849"
+  namesrv:
+    ports:
+      - "127.0.0.1:19876:9876"
+  broker:
+    ports:
+      - "127.0.0.1:10909:10909"
+      - "127.0.0.1:10911:10911"
+      - "127.0.0.1:10912:10912"
+    # NameServer returns this address to Java clients on the Windows host.
+    # The original script advertises a bridge IP, which Windows cannot route.
+    command:
+      - bash
+      - -ec
+      - |
+        cp /opt/smartoffice/broker.conf /tmp/smartoffice-host-broker.conf
+        printf '\nbrokerIP1=127.0.0.1\n' >> /tmp/smartoffice-host-broker.conf
+        exec sh mqbroker -n "$${NAMESRV_ADDR}" -c /tmp/smartoffice-host-broker.conf

@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+// 使用真实数据库事务与缓存桩，检查提交后失效、回滚不失效，以及管理操作和预约的并发边界。
 @SpringBootTest(classes = {DatabaseTestConfig.class, MeetingRoomAdministrationTransactionTest.CacheTestConfig.class})
 @ActiveProfiles("test")
 @Sql({"/db-test.sql", "/message-test.sql"})
@@ -58,6 +59,8 @@ class MeetingRoomAdministrationTransactionTest {
 
     @Test void deletionKeepsHistoricalRowsAndInvalidatesOnlyAfterCommit() {
         jdbc.update("INSERT INTO booking_order(user_id,room_id,topic,start_time,end_time,status) VALUES(1,1,'history','2000-01-01 10:00:00','2000-01-01 11:00:00',1)");
+        // 显式开启外层事务，删除方法会加入该事务；回调内部尚未提交，缓存此时应保持不变。
+        // 回调正常结束、事务提交后才检查失效调用，从而区分“方法执行完”和“事务已提交”。
         new TransactionTemplate(transactions).executeWithoutResult(status -> {
             rooms.deleteRoom(1L);
             verify(cache, never()).invalidate(anyLong());
@@ -86,11 +89,11 @@ class MeetingRoomAdministrationTransactionTest {
 
     @Test void equipmentAtStorageBoundaryCanBeCreatedAndUpdated() {
         var boundary = dto();
-        boundary.setEquipment(List.of("x".repeat(496))); // ["..."] adds four characters.
+        boundary.setEquipment(List.of("x".repeat(496))); // JSON 数组括号与引号还会占 4 个字符。
         Long id = rooms.createRoom(boundary);
         assertEquals("[\"" + "x".repeat(496) + "\"]",
                 jdbc.queryForObject("SELECT equipment FROM meeting_room WHERE id=?", String.class, id));
-        boundary.setEquipment(List.of("\"".repeat(248))); // Escapes: 248 * 2 + 4 = 500.
+        boundary.setEquipment(List.of("\"".repeat(248))); // 每个引号转义后占 2 个字符，总长为 248 × 2 + 4 = 500。
         rooms.updateRoom(id, boundary);
         assertEquals("[\"" + "\\\"".repeat(248) + "\"]",
                 jdbc.queryForObject("SELECT equipment FROM meeting_room WHERE id=?", String.class, id));
@@ -98,7 +101,7 @@ class MeetingRoomAdministrationTransactionTest {
 
     @Test void oversizedEquipmentIsBadRequestWithoutDatabaseOrCacheChanges() {
         for (List<String> equipment : List.of(List.of("x".repeat(497)), List.of("\"".repeat(249)),
-                List.of("x".repeat(247), "y".repeat(247)))) { // Two strings: 501 total.
+                List.of("x".repeat(247), "y".repeat(247)))) { // 两个字符串加上 JSON 结构共 501 个字符。
             var invalid = dto();
             invalid.setEquipment(equipment);
             assertEquals(400, assertThrows(BusinessException.class, () -> rooms.createRoom(invalid)).getStatus().value());
@@ -182,6 +185,8 @@ class MeetingRoomAdministrationTransactionTest {
         @Bean RoomBloomFilterService bloom() { return mock(RoomBloomFilterService.class); }
         @Bean RoomCache cache() {
             RoomCache cache = mock(RoomCache.class);
+            // thenAnswer 在缓存桩每次被调用时执行；取第二个参数中的 Supplier 并调用 get()。
+            // 这样仍会走真实数据库回源，测试只替换缓存交互，不会把数据查询也一并跳过。
             when(cache.get(anyLong(), any())).thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get());
             return cache;
         }

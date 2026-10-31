@@ -34,6 +34,9 @@ class ConcurrentIdempotencyTest {
         public Object intercept(Invocation invocation) throws Throwable {
             Object result=invocation.proceed();
             var statement=(MappedStatement)invocation.getArgs()[0];
+            // 先执行真实查询，只在指定 requestId 返回空记录时等待两个线程到齐，再放行写入。
+            // instanceof 同时检查类型并绑定 parameters/rows；<?,?> 和 <?> 表示元素类型未知。
+            // 这样稳定制造“两次初查都未命中”的竞争，检验后续行锁和幂等复查是否有效。
             if(statement.getId().endsWith(".findByRequest")
                     && invocation.getArgs()[1] instanceof Map<?,?> parameters
                     && "concurrent-retry".equals(parameters.get("requestId"))
@@ -53,6 +56,8 @@ class ConcurrentIdempotencyTest {
     @Test void twoRequestsThatInitiallyMissMustBothReturnTheCommittedOrder() throws Exception {
         var pool=Executors.newFixedThreadPool(2);
         try {
+            // Callable<Long> 接收可返回订单 ID、也可抛出异常的 Lambda；submit 后才由线程池执行。
+            // 两个 Future 分别保存执行结果，后续 get 比较它们是否拿到了同一份已提交订单。
             Callable<Long> retry=()->{
                 var dto=BookingConcurrencyTest.booking(10,11);dto.setRequestId("concurrent-retry");
                 return service.createBookingInsideLock(dto,1L);

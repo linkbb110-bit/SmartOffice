@@ -9,6 +9,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BookingTrafficGuardTest {
+    // Sentinel 规则和计数都由当前 JVM 共享；测试前保存规则，结束后恢复，避免低阈值影响其他测试。
+    // 滑动窗口统计还需单独重置，本测试只清理预约资源，不清空其他资源的计数。
     private List<FlowRule> previousRules;
     private static void resetBookingMetrics() {
         var node=ClusterBuilderSlot.getClusterNode("smartoffice:booking:create");
@@ -24,8 +26,7 @@ class BookingTrafficGuardTest {
         previous.initialize();
         previous.execute(()->0L);
         previous.execute(()->0L);
-        // Loading new rules does not clear Sentinel's JVM-wide rolling counters.
-        // Keep prior API traffic in this regression, then isolate only this test's resource.
+        // 重新加载规则不会清空 JVM 中的滑动窗口计数；先模拟已有流量，再只重置本测试的资源计数。
         resetBookingMetrics();
     }
     @Test void secondRequestInSameWindowIsLimitedAndDoesNotExecuteBooking() {

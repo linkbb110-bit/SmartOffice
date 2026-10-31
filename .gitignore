@@ -12,3 +12,9 @@ dist/
 !.env.*.example
 logs/
 .superpowers/
+# User-provided local source archive; retain on disk, exclude from commits.
+/backend.zip
+# 本地数据库密码
+backend/mysqlpassword
+# 本地环境配置
+**/application-local.yml

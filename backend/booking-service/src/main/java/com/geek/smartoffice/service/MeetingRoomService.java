@@ -9,6 +9,7 @@ import java.util.List;
 public interface MeetingRoomService {
     List<RoomVO> listRooms();
 
+    // 详情读取可命中缓存，仍统一拒绝不存在或逻辑删除的房间；返回实体供需要房间数据的内部流程使用。
     MeetingRoom getExistingRoom(Long roomId);
 
     Long createRoom(RoomSaveDTO dto);

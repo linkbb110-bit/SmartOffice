@@ -9,6 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+/*
+ * 直接调用通知并模拟连接点，将验证范围限定为 proceed 的调用及返回、异常传播，不启动 Spring AOP 代理。
+ * thenReturn/thenThrow 只为模拟对象设定行为，真正执行 proceed 的时机仍在 around 的 try 块中。
+ */
 class OperationLogAspectTest {
 
     @Test
@@ -39,6 +43,7 @@ class OperationLogAspectTest {
         when(signature.toShortString()).thenReturn("Demo.run()");
         when(joinPoint.proceed()).thenThrow(failure);
 
+        // lambda 将可能抛错的调用延后交给 assertThrows 执行；此断言检查异常类型，不单独验证异常实例相同。
         assertThrows(IllegalStateException.class,
                 () -> new OperationLogAspect().around(joinPoint, annotation));
     }

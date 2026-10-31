@@ -9,7 +9,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL:jdbc:mysql://localhost:3306/smartoffice_booking?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:smartoffice_booking}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -65,7 +65,7 @@ smartoffice:
     producer-group: smartoffice-outbox-producer
     consumer-group: smartoffice-notification-v1
 knife4j:
-  enable: true
+  enable: false
   setting:
     language: zh_cn
 springdoc:

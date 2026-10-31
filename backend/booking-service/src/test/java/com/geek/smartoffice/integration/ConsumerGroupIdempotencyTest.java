@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Real application consumers and SQL/transactions, isolated H2; no Broker claim. */
+/** 在隔离的 H2 中验证真实消费逻辑与事务；覆盖跨消费组幂等，不代表真实 Broker 已验收。 */
 @SpringBootTest(classes=DatabaseTestConfig.class)
 @ActiveProfiles("test")
 @Sql({"/db-test.sql", "/message-test.sql"})
@@ -44,8 +44,12 @@ class ConsumerGroupIdempotencyTest {
         return json.readValue(jdbc.queryForObject("SELECT payload FROM booking_outbox", String.class), BookingCreatedEvent.class);
     }
 
+    /**
+     * 每个消费组使用独立实例，避免并发改写单例组件的消费组属性。
+     * 手动 new 不会触发 @Value 注入或 Spring 事务代理，因此用反射补入消费组配置。
+     * 再由 TransactionTemplate 包装真实消费：回调正常结束后提交，运行时异常向外传播时回滚。
+     */
     void consumeAs(String group, BookingCreatedEvent event) {
-        // Separate instances avoid racing a mutable group property on the injected singleton.
         var handler = new BookingEventConsumer(jdbc, orders, json, clock);
         ReflectionTestUtils.setField(handler, "consumerGroup", group);
         var tx = new TransactionTemplate(transactions);
@@ -62,7 +66,7 @@ class ConsumerGroupIdempotencyTest {
 
     @Test void newAndOldGroupsCanReplayWithoutDuplicatingExistingBusinessRows() throws Exception {
         var event = event();
-        consumer.consume(event); // Exercise the actual Spring transaction proxy first.
+        consumer.consume(event); // 先通过 Spring 事务代理执行一次真实消费。
         var before = jdbc.queryForMap("SELECT id,content,created_at FROM booking_notification");
         consumeAs("new-group", event);
         consumeAs("new-group", event);
@@ -94,7 +98,7 @@ class ConsumerGroupIdempotencyTest {
     @Test void existingConsistentNotificationOrAuditCanBeCompletedWithoutDuplicateRows() throws Exception {
         var event = event();
         consumeAs("old-group", event);
-        jdbc.update("DELETE FROM business_event_audit"); // Isolated fixture simulates partial historical data.
+        jdbc.update("DELETE FROM business_event_audit"); // 仅在隔离测试库中模拟历史数据缺失。
         consumeAs("new-group", event);
         oneBusinessEffect(2);
         jdbc.update("DELETE FROM booking_notification");
@@ -136,6 +140,7 @@ class ConsumerGroupIdempotencyTest {
         var event = event();
         consumeAs("old-group", event);
         jdbc.update("DELETE FROM business_event_audit");
+        // 用测试约束制造回执写入失败，验证本次补写的业务记录会随事务一起回滚。
         jdbc.execute("ALTER TABLE message_consumption ADD CONSTRAINT reject_new_group CHECK(consumer_group <> 'new-group')");
         try {
             assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> consumeAs("new-group", event));

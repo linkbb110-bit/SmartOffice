@@ -15,9 +15,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
+// 用临时本地 HTTP 服务记录网关实际转发的路径与请求头，不依赖 Nacos 或业务服务。
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties={"spring.cloud.nacos.discovery.enabled=false","spring.cloud.discovery.enabled=false"})
 class GatewayRoutingTest {
+    // HTTP 回调与断言运行在不同线程，AtomicReference 用来安全传递回调观察到的请求信息。
     static final AtomicReference<String> path=new AtomicReference<>();
     static final AtomicReference<String> spoof=new AtomicReference<>();
     static final AtomicReference<String> auth=new AtomicReference<>();
@@ -44,6 +46,8 @@ class GatewayRoutingTest {
             }); server.start(); return server;
         } catch(Exception ex) { throw new IllegalStateException(ex); }
     }
+    // 测试上下文创建前注册动态属性；Supplier 在取值时提供临时 HTTP 服务的实际随机端口。
+    // 因而路由经过真实网关，但目标服务与注册中心都可以由本地测试替代。
     @DynamicPropertySource static void properties(DynamicPropertyRegistry registry) {
         registry.add("smartoffice.routes.user-uri",()->"http://127.0.0.1:"+usersUpstream.getAddress().getPort());
         registry.add("smartoffice.routes.booking-uri",()->"http://127.0.0.1:"+bookingsUpstream.getAddress().getPort());
