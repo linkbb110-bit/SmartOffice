@@ -4,7 +4,7 @@
 
 ## 当前目录与数据边界
 
-- 工作目录与 Git 根目录均为 `D:\A-project\smartoffice-rebuilt`，分支仍为 `codex/project-directory-layout`。
+- 工作目录与 Git 根目录均为 `D:\A-project\smartoffice-rebuilt`，分支仍为 `目录迁移工作分支`。
 - Docker Desktop 数据目录为 `D:\DockerData\DockerDesktopWSL\DockerDesktopWSL`。用户已确认这是迁移后的预期位置；本轮没有执行 Docker 数据迁移。
 - 旧盘 `D:\DockerData\DockerDesktopWSL\disk\docker_data.vhdx` 独立保留。启动前及 14:23 收尾只读检查均为未挂载，完整 SHA-256、长度和修改时间均与原基线一致。
 - 保留全部既有未提交代码、私有配置、数据库、八个命名卷和历史证据；没有初始化 SQL 重放、V1 迁移重放、reset、prune、数据覆盖或远程推送。
@@ -57,7 +57,7 @@ Browser 插件不可用，复用已安装的 Playwright 1.56.1 + Edge，1440×10
 
 脚本退出0、`passed=true`，浏览器已关闭。报告只记录头名称、形状、匹配布尔值和状态码，不保存密码、JWT或完整头值。新浏览器证据为40文件，10项秘密逐值比对及JWT模式均匹配0。
 
-证据目录：`C:\Users\11707\.codex\visualizations\2026\10\21\01a15d06-fda3-7103-8747-15633f375863\knife4j-final\complete-2026-10-21T09-44-56-226Z\`，其中 `report.json`、`07-valid-jwt-ui-200.png`、`08-invalid-jwt-ui-401.png`、`09-missing-jwt-browser-401.png` 已核对。修复前401证据在同级 `original-2026-10-21T07-37-01-361Z/`，未覆盖。
+证据目录：`[历史本机验证资料，未随仓库公开]`，其中 `report.json`、`07-valid-jwt-ui-200.png`、`08-invalid-jwt-ui-401.png`、`09-missing-jwt-browser-401.png` 已核对。修复前401证据在同级 `original-2026-10-21T07-37-01-361Z/`，未覆盖。
 
 ### Java 与前端的最终状态
 
@@ -123,7 +123,7 @@ Desktop 启动时，旧容器仍引用 `C:\Users\11707\Desktop\smartoffice-rebui
 
 Browser 插件不可用。普通进程沙箱首次启动在页面访问前遇到 Crashpad 管道错误，正常宿主权限下运行成功，保持 Chromium 沙箱启用；失败证据保留。浏览器已关闭，截图已遮罩输入，未保存 Token、密码或完整头信息。
 
-本轮浏览器证据根目录为 `C:\Users\11707\.codex\visualizations\2026\10\21\01a15d06-fda3-7103-8747-15633f375863\knife4j\`。这是本会话允许的工具证据目录，不是桌面项目目录：
+本轮浏览器证据根目录为 `[历史本机验证资料，未随仓库公开]`。这是本会话允许的工具证据目录，不是桌面项目目录：
 
 - `run-2026-10-21T06-22-40-018Z/report.json`：完整 UI 操作及发送未发生的结果。
 - `diagnostic-2026-10-21T06-25-52-257Z/report.json`：具体请求头校验守卫。

@@ -117,9 +117,9 @@ capacity31 的**数值校验正确**，但响应文案是用户已有 `@Max(30)`
 
 新账号：管理员 `dev_admin_20261020`（ID3），普通用户 `dev_user_20261020`（ID4）。独立随机密码只在 ignored `deploy/.env.host-dev` 的 DEV_ADMIN_PASSWORD / DEV_USER_PASSWORD；不要复制到报告、终端历史或 Git。通过实际注册生成 BCrypt；管理员提升只针对刚返回的专用用户名/ID/USER 记录，未覆盖已有账号密码。原初始化脚本的 demo 账号仍保留，练习优先用这两个新账号。
 
-浏览器实际命令：`node C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/knife4j-host-check.mjs --execute-readonly`。Browser 插件不可用，复用已有 Playwright 与已安装 Edge，没有安装依赖或注入 Authorization 请求头。通过真实 Authorize 输入登录 Token，在真实 UI 将 URL 改为固定 loopback 后点击发送；仍未观测到目标请求。控制台错误/警告、资源网络失败、外部请求均为 0；没有明显 UI 校验提示。当前证据无法区分 UI 兼容性问题与自动化交互未触发，不直接断言业务接口故障。已进行有限定位，不无限重试；仍需手工复核该按钮或后续针对 UI 定位。浏览器已关闭。
+浏览器实际命令：`node [历史本机验证资料，未随仓库公开] --execute-readonly`。Browser 插件不可用，复用已有 Playwright 与已安装 Edge，没有安装依赖或注入 Authorization 请求头。通过真实 Authorize 输入登录 Token，在真实 UI 将 URL 改为固定 loopback 后点击发送；仍未观测到目标请求。控制台错误/警告、资源网络失败、外部请求均为 0；没有明显 UI 校验提示。当前证据无法区分 UI 兼容性问题与自动化交互未触发，不直接断言业务接口故障。已进行有限定位，不无限重试；仍需手工复核该按钮或后续针对 UI 定位。浏览器已关闭。
 
-脱敏 `report.json`、DOM、截图位于 `C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/knife4j-host-evidence/`；报告另复制为本项目 ignored 的 `knife4j-browser-report.json`。该浏览器结果独立于 90 项后台 HTTP/SQL 验收，不计入通过数。
+脱敏 `report.json`、DOM、截图位于 `[历史本机验证资料，未随仓库公开]`；报告另复制为本项目 ignored 的 `knife4j-browser-report.json`。该浏览器结果独立于 90 项后台 HTTP/SQL 验收，不计入通过数。
 
 ### 5.2 失败不能记成通过
 
@@ -230,11 +230,11 @@ Nacos 实例查询已验证；本轮没有验证控制台账号初始化/登录�
 
 - 秘密：旧 JWT_SECRET、NACOS_AUTH_TOKEN、NACOS_AUTH_IDENTITY_VALUE。
 - 非秘密：NACOS_AUTH_IDENTITY_KEY。
-- 准确记录：`C:\Users\11707\.codex\sessions\2026\10\20\rollout-2026-10-20T21-25-15-01a1597c-d2a9-7f91-9f77-551317fab8d9.jsonl`，位于项目外，未提交 Git；未擅自删除或修改此记录。
+- 准确记录：`[历史本机验证资料，未随仓库公开]`，位于项目外，未提交 Git；未擅自删除或修改此记录。
 
 新开发环境的八项基础设施/JWT/Nacos 秘密全部独立，与旧值不同；两个开发账号密码也独立生成。原 `deploy/.env.upgrade` 和旧 `backend/.env.host-*.properties` 保留，当前启动**不使用**。未来重新启用旧环境前，应轮换上述三个旧秘密；JWT 更新使旧 Token 失效，Nacos token/identity 需要协调更新。没有证据表明该误输出包含数据库/Redis 密码，不能声称这些值也已暴露。
 
-私有 env、宿主 properties、logs、target、node_modules 等均被忽略；新增 `/backend.zip` 忽略规则，保留用户归档文件而不纳入提交。最终文本候选与新旧凭据逐项内存比对，结果另存无秘密值的 hygiene 记录。**忽略规则不能撤回已进入 Codex 工具记录的旧秘密。** 不要将该 jsonl 或私人 env 转发/上传。
+私有 env、宿主 properties、logs、target、node_modules 等均被忽略；新增 `/backend.zip` 忽略规则，保留用户归档文件而不纳入提交。最终文本候选与新旧凭据逐项内存比对，结果另存无秘密值的 hygiene 记录。**忽略规则不能撤回已进入 本机工具会话记录的旧秘密。** 不要将该 jsonl 或私人 env 转发/上传。
 
 ## 9. 文件修改与未验证范围
 

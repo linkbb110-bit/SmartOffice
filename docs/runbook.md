@@ -8,7 +8,7 @@ Java17、Maven3.9.x、Node.js（本机验证24.11.1）与 npm；完整部署需�
 
 目录迁移后 Vite 配置名为 `frontend/vite.config.ts`，保留 `--configLoader native`。宿主使用已验证的 Node 24.11.1，Node 22 至少需 22.18 默认 TypeScript 支持（[官方说明](https://nodejs.org/docs/latest-v22.x/api/typescript.html#modules-typescript)）；旧缓存 Node 22 镜像也须核对实际版本。本轮 Engine 不可用，不能把宿主构建成功称为 Docker Node 22 镜像构建成功。
 
-项目已有本地稳定基线 `a29823e`，2026-10-17 在 `codex/project-directory-layout` 分支分离前后端目录，没有推送。原源码归档 `.upgrade-backup/original-2026-10-14.zip`；另有保留目录结构的 `original-sources-layout-2026-10-14.zip`，旧环境文件单独保留 `.env.development.original`/`.env.production.original`。这些备份与真实环境文件被 git/docker ignore。恢复应解压到独立目录核对，避免覆盖正在使用的项目。
+项目已有本地稳定基线 `a29823e`，2026-10-17 在 `目录迁移工作分支` 分支分离前后端目录，没有推送。原源码归档 `.upgrade-backup/original-2026-10-14.zip`；另有保留目录结构的 `original-sources-layout-2026-10-14.zip`，旧环境文件单独保留 `.env.development.original`/`.env.production.original`。这些备份与真实环境文件被 git/docker ignore。恢复应解压到独立目录核对，避免覆盖正在使用的项目。
 
 不自动连接现有数据库。升级 Compose 使用两个新 MySQL、独立账号/新项目卷，原 `deploy/docker-compose.dev.yml` 和原数据卷保留。`deploy/run-host.sh` 是原单体部署示例，升级版使用本页和 `deploy/docker-compose.upgrade.yml`。任何真实云部署不在本次授权范围。
 
@@ -85,7 +85,7 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 ./deploy/upgrade/smoke-local.ps1 `
   -H2Jar 'D:\download\apache-maven-3.9.4-bin\apache-maven-3.9.4\mvn_repo\com\h2database\h2\2.3.232\h2-2.3.232.jar' `
   -WithFrontend `
-  -BrowserScript 'C:\Users\11707\.codex\visualizations\2026\10\14\01a13869-82c6-7460-b7a2-9081378d5177\browser-check.mjs'
+  -BrowserScript '[历史本机验证资料，未随仓库公开]'
 ```
 
 浏览器成功后，冒烟共9项且报告 browser=passed；正式冒烟运行中失败报告为 passed=false，不沿用旧结果（Java/H2路径等启动前参数错误直接抛出，应先修正参数）。桌面1366×900与手机390×844验证内容、截图和限制见 [browser-qa.md](browser-qa.md)。只允许访问本轮 loopback 地址，无外部账号或云服务。冒烟 JAR 正在运行时不要重新打包，以免 Windows 文件锁冲突。

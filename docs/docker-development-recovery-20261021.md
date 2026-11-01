@@ -6,7 +6,7 @@
 
 ## A. 恢复了哪些上下文和既有成果
 
-- 仓库分支仍为 `codex/project-directory-layout`，HEAD `65e65fb`；没有 reset、撤销、暂存、提交或推送。
+- 仓库分支仍为 `目录迁移工作分支`，HEAD `65e65fb`；没有 reset、撤销、暂存、提交或推送。
 - 阅读昨日恢复报告、计划、真实验收 JSON、完整 Maven 记录、进程清理记录和旧盘基线。确认昨日六个中间件/八个独立卷已建立并验收，三个测试 JAR 在收尾时已停止。今天没有重新初始化数据库。
 - 既有部署覆盖、配置生成脚本、文档 GET 安全开关、Knife4j enhancement 兼容性修复和两组回归测试均保留。
 - 保留用户 DTO Max30（原消息仍写100）、RoomCacheStore、POM 格式变更、backend.zip 和新出现的 smartoffice-directory.txt，未覆盖这些文件。
@@ -49,7 +49,7 @@
 
 脱敏启动日志摘录：`desktop-start-diagnostic.json`。原日志位置：`C:\Users\11707\AppData\Local\Docker\log\host\com.docker.backend.exe.log`。这些日志未加入 Git。
 
-Docker 的[官方问题仓库记录过相似 socket 启动失败](https://github.com/docker/desktop-feedback/issues/531)，另一份[启动上下文相关问题报告](https://github.com/openai/codex/issues/52698)提示了待对照的原因。这些报告不是本机根因的证明；本轮未照搬其中的全局目录改动、升级或清理操作。
+Docker 的[官方问题仓库记录过相似 socket 启动失败](https://github.com/docker/desktop-feedback/issues/531)。该公开问题记录不是本机根因的证明；本轮未照搬其中的全局目录改动、升级或清理操作。
 
 | 中间件 | 预期本机地址 | 今天启动/健康 | 昨日证据，仅作背景 |
 | --- | --- | --- | --- |
@@ -109,7 +109,7 @@ $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 - `logs/docker-recovery-20261021/real-redis-lua-host-dev-check.mjs`：要求预先核实的 Engine ID 和完整 Redis 容器ID；固定本机 named pipe、host-dev 标签、镜像和运行状态；从应用源码提取实际Lua，使用独立UUID键、最长600秒TTL，仅INVALIDATE删除本次detail键，不做全局清理。语法检查通过，未接触Redis。
 - Knife4j 定向离线检查发现一种可验证假设：默认媒体类型已显示，但发送分支的三个布尔标志可能均未初始化，造成静默无请求。尚未在真实服务上证实，不能记作已修复；没有为此修改业务代码。
 
-Knife4j 本次离线方法测试及两个脚本语法检查退出0；隔离浏览器夹具在访问页面之前因Edge Crashpad管道错误退出1，不是应用页面失败或通过的证据，未再重复启动。没有遗留该子任务的Node/Edge进程。准确离线报告/探针在 `C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/20261021/knife4j/` 的 `offline-findings.md`、`send-probe.mjs`、`static-send-test-result.json`、`fixture-evidence/report.json`；真实浏览器验收仍未执行。
+Knife4j 本次离线方法测试及两个脚本语法检查退出0；隔离浏览器夹具在访问页面之前因Edge Crashpad管道错误退出1，不是应用页面失败或通过的证据，未再重复启动。没有遗留该子任务的Node/Edge进程。准确离线报告/探针在 `[历史本机验证资料，未随仓库公开]` 的 `offline-findings.md`、`send-probe.mjs`、`static-send-test-result.json`、`fixture-evidence/report.json`；真实浏览器验收仍未执行。
 
 目前 capacity 实际注解是 `@Max(30)`，用户原文案仍为“会议室容量最多为100”；保留原修改，不把消息文字误判成允许容量100。
 
@@ -118,7 +118,7 @@ Knife4j 本次离线方法测试及两个脚本语法检查退出0；隔离浏�
 仅在内存读取并比较，未打印值：
 
 - 确认旧工具记录中的秘密类别正是 **JWT_SECRET、NACOS_AUTH_TOKEN、NACOS_AUTH_IDENTITY_VALUE**。没有发现该记录包含新环境八项秘密；没有证据表明此次误输出涉及数据库或Redis密码。
-- 具体记录在 `C:\Users\11707\.codex\sessions\2026\10\20\rollout-2026-10-20T21-25-15-01a1597c-d2a9-7f91-9f77-551317fab8d9.jsonl`。此文件在项目外，未修改、删除或纳入Git。
+- 具体记录在 `[历史本机验证资料，未随仓库公开]`。此文件在项目外，未修改、删除或纳入Git。
 - 新环境八项秘密均存在、非占位符且与旧值不同；两开发账号沿用昨日独立密码。原 `.env.upgrade` 及旧properties保留，当前开发方式不使用它们。未来重启旧环境前需要协调轮换上述三个旧秘密，JWT轮换会让旧Token失效；不擅自改其他项目共享凭据。
 - `deploy/.env.host-dev`、`.env.upgrade`、新旧宿主properties、logs、target、node_modules、backend.zip均被忽略；Git候选没有私有env。新旧18个秘密值与源码候选/本轮日志逐项比对无匹配，证据 `source-hygiene-final.json`。这不能撤回已进入历史工具记录的旧秘密。
 - 专用账号：`dev_admin_20261020`、`dev_user_20261020`；密码仅保存在本机私有env的 DEV_ADMIN_PASSWORD / DEV_USER_PASSWORD，不写进文档、提交、终端输出或共享运行配置。
