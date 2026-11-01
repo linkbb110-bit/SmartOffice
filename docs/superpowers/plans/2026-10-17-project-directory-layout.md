@@ -1,6 +1,5 @@
 # SmartOffice 前后端目录整理实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans. 本次用户已明确要求直接执行目录迁移，前端、部署路径适配可独立并行；最终统一复核和验证。
 
 **Goal:** 将现有源码分为独立 frontend 和 backend 聚合工程，业务行为及服务身份保持不变。
 
@@ -8,7 +7,7 @@
 
 **Tech Stack:** 保留当前 Java 17、Maven、Vue 3、Vite、Docker 及所有运行时依赖版本。
 
-**Spec:** 用户 2026-10-17 目录整理要求；稳定基线 a29823e；新分支 codex/project-directory-layout。
+**Spec:** 用户 2026-10-17 目录整理要求；稳定基线 a29823e；新分支 目录迁移工作分支。
 
 ## Global Constraints
 

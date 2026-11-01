@@ -12,7 +12,7 @@ services:
       MYSQL_PASSWORD: smartoffice123
       TZ: Asia/Shanghai
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - smartoffice_mysql_data:/var/lib/mysql
     healthcheck:
@@ -26,7 +26,7 @@ services:
     container_name: smartoffice-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - smartoffice_redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]

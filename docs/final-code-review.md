@@ -264,16 +264,9 @@ node --experimental-test-module-mocks --test logs/code-review/remote-probe-bound
 
 房间探针因 Windows 沙箱内 Java 类路径访问受限，曾失败，后在标准批准权限下退出 0；没有修改系统访问权限。消息探针的现存失败日志单独保留，不计入成功。Node 工具测试完全拦截进程/网络/历史报告写入，不是真实远端访问测试。上述日志及临时探针在 ignored `logs/code-review/`，不作为应用新增功能。
 
-### 安全插件扫描的限制
+### 扩展安全扫描的限制
 
-此前使用的 `codex-security:deep-security-scan` 独立扫描因额度耗尽发生终止失败，其稳定错误为：
-
-```text
-Deep Scan stopped after 3 consecutive unsuccessful discovery workers (limit: 3); last failure (transient_error): You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 8:55 PM.
-This is a terminal failure of this logical Deep Scan; no successful discovery manifest was returned.
-```
-
-没有返回成功 manifest 或可用于读取上下文的 scanId，因此不能核实插件内部是否保留候选/发现；不能把未知写成零项。没有重启该扫描、创建替代扫描、调用完成接口或伪造插件报告。本报告是已有人工源码审查及证据整理结果，**不是该插件已完成的安全扫描结果**。插件覆盖不完整，总量/input/cached-input token 实测值未提供，不作估算。
+曾尝试运行扩展自动化安全扫描，但未完成，也未产生可复核的扫描结果。因此不将其计入通过项。本报告基于已有源码审查和实际测试记录，不能视为完整安全扫描已通过。
 
 ### 审计阶段完成记录（修复前）
 

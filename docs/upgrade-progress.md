@@ -138,7 +138,7 @@ Task 5：前端早期 Node 行为测试6/6与构建通过；最终8/8结果见�
 
 ## 2026-10-17 前后端目录整理收尾
 
-- 基于稳定提交 `a29823e` 在 `codex/project-directory-layout` 整理：Vue 工程归入 frontend，Maven 父工程及四个模块归入 backend，原预约模块更名为 booking-service；Compose 和 Dockerfile 归入 deploy。只调整目录与引用，Java/SQL/业务前端及原测试保持原内容。
+- 基于稳定提交 `a29823e` 在 `目录迁移工作分支` 整理：Vue 工程归入 frontend，Maven 父工程及四个模块归入 backend，原预约模块更名为 booking-service；Compose 和 Dockerfile 归入 deploy。只调整目录与引用，Java/SQL/业务前端及原测试保持原内容。
 - 新布局 Maven verify 110/110，前端 15/15、类型检查/构建与开发 HTTP 通过；安装复用本地缓存，未验证全新联网下载。探针隔离 57/57、四种 Compose config 和 40 项源路径检查通过。
 - 三个真实 JAR 与 Vite 已完成 8/8 冒烟，覆盖 Vite `/api` → Gateway → 业务服务、HTTP Feign、预约幂等、取消及 Outbox。使用新建内存 H2、MQ/Nacos 关闭，未执行浏览器，不能冒充真实中间件验收。
 - Docker 两次只读检查均为本地 desktop-linux pipe 不存在，因此本次镜像构建、容器启动/健康及真实中间件回归未执行。保留所有原数据、卷、私有环境、备份与历史日志。

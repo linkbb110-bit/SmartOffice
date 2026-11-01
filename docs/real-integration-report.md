@@ -139,7 +139,7 @@ Nacos第一次单独pull出现EOF；具体scope的宿主HTTPS诊断200后再单�
 - `node deploy/upgrade/real-failure-check.mjs --mode user-outage`：5/5 PASS，13HTTP/4SQL，暂停本项目用户服务，新预约503且订单/Outbox均0，查询/取消不依赖用户服务；恢复原容器后Gateway身份接口和同key新预约成功。real-failure-user-outage-result.json。
 - `./deploy/upgrade/run-middleware-probe.ps1 -Mode MqEarliest -EventId 7f8c4cf2-201c-47a9-8152-d356bd433c2d`：PASS，使用正在运行容器JAR、SDK5.3.1与真实Outbox原始payload，首次组从FIRST_OFFSET读取既有事件，三消费表前后各1；mq-earliest-command.log。
 - 同事件 `-Mode MqDuplicate`首轮探针失败于只读broker route baseline；未发送重复消息。实际SDK官方源码显示fetchPublishMessageQueues只查询NameServer、不填producer的broker地址缓存；仅探针补真实updateTopicRouteInfoFromNameServer后重跑PASS。实际两SEND_OK有不同MsgId与queue/offset，新观察组读到两份，业务消费组offset超越两份且retry/DLQ/schedule不增，三表仍[1,1,1]；mq-duplicate-command.log保留失败，mq-duplicate-fixed-command.log与middleware-probe-5af9ee0f9dfe45c19d5ba92727f26349保留成功。依据[RocketMQ5.3.1官方实现](https://github.com/apache/rocketmq/blob/rocketmq-all-5.3.1/client/src/main/java/org/apache/rocketmq/client/impl/MQAdminImpl.java)，非生产代码修复。
-- 真实Docker后端Edge155/Playwright1.56.1浏览器8项PASS：新用户注册/登录、Gateway房间查询、同步双击仅1个带requestId的POST、本人取消、409提示保留弹窗及同参数重试同key、桌面/手机尺寸、无pageerror/非预期console错误、真实401清令牌回登录。命令`node <visualizations>/real-browser-check.mjs http://127.0.0.1:18080`，real-browser-command.log；报告与五截图在`C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/real-browser-evidence/b1dd43c3/`，已实际查看桌面列表和手机弹窗。不使用此前H2浏览器报告。
+- 真实Docker后端Edge155/Playwright1.56.1浏览器8项PASS：新用户注册/登录、Gateway房间查询、同步双击仅1个带requestId的POST、本人取消、409提示保留弹窗及同参数重试同key、桌面/手机尺寸、无pageerror/非预期console错误、真实401清令牌回登录。命令`node <visualizations>/real-browser-check.mjs http://127.0.0.1:18080`，real-browser-command.log；报告与五截图在`[历史本机验证资料，未随仓库公开]`，已实际查看桌面列表和手机弹窗。不使用此前H2浏览器报告。
 
 Broker/消费者故障与重启测试继续执行，尚不计为通过。
 
@@ -163,7 +163,7 @@ Broker/消费者故障与重启测试继续执行，尚不计为通过。
 
 `node deploy/upgrade/real-api-check.mjs --with-sentinel-burst`：退出0，17/17，runId `real_20261014T140145_660669fa`。新增专用cache房间，真实Redis旧detail TTL177秒；管理员PUT提交后detail不存在且TTL=-2，version不同；GET重新填入新name/capacity，TTL180秒；MySQL读取一致。普通用户PUT403后MySQL各取证字段和Redis detail/version均未改变。记录167HTTP/17SQL/16Redis只读CLI命令及返回值，fixture全部保留。
 
-`node C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/real-browser-check.mjs http://127.0.0.1:18080`：退出0、9项PASS。真实页面长名称换行已复验，五张截图与report.json在`real-browser-evidence/5930f9ff/`；已人工查看桌面卡片和手机弹窗。浏览器报告无pageerror，409/401为本轮预期错误响应；没有忽略其他console错误。该脚本和Playwright工具位于项目外，换机器需重新配置，不能仅靠仓库命令假定可运行。
+`node [历史本机验证资料，未随仓库公开] http://127.0.0.1:18080`：退出0、9项PASS。真实页面长名称换行已复验，五张截图与report.json在`real-browser-evidence/5930f9ff/`；已人工查看桌面卡片和手机弹窗。浏览器报告无pageerror，409/401为本轮预期错误响应；没有忽略其他console错误。该脚本和Playwright工具位于项目外，换机器需重新配置，不能仅靠仓库命令假定可运行。
 
 最终只读核对命令与证据：
 

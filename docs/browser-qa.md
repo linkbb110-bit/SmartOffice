@@ -8,10 +8,9 @@ Vue/Nginx → Gateway → 用户/预约服务，真实MySQL、Redis、RocketMQ�
 
 日志`logs/real-integration/real-browser-final-command.log`；桌面1366×900、手机390×844，Edge155/Playwright1.56.1、独立context，网络仅loopback。无新浏览器/项目依赖。当前报告与五截图在项目外`real-browser-evidence/5930f9ff/`，桌面卡片与手机弹窗已人工查看。此前8项真实后端结果b1dd43c3同样保留；截图暴露长无空格名称裁切，只加`overflow-wrap:anywhere`，新增实际标题宽度断言并使用更新后的前端镜像复验。
 
-- [最新桌面卡片](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/real-browser-evidence/5930f9ff/desktop-rooms.png)
-- [最新手机弹窗](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/real-browser-evidence/5930f9ff/mobile-booking.png)
-- [最新机器报告](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/real-browser-evidence/5930f9ff/report.json)
-
+- 最新桌面卡片：历史本机证据，未纳入公开仓库。
+- 最新手机弹窗：历史本机证据，未纳入公开仓库。
+- 最新机器报告：历史本机证据，未纳入公开仓库。
 以下保留早期H2验收，不能与上面的真实中间件结果混用。其他浏览器、更多设备和浏览器响应丢失场景仍未执行。
 
 ## 历史：H2本地联调
@@ -20,7 +19,7 @@ Vue/Nginx → Gateway → 用户/预约服务，真实MySQL、Redis、RocketMQ�
 
 ## 环境与方式
 
-本会话没有 Browser 插件，因此按前端验证技能使用常规 Playwright。Playwright 1.56.1安装在项目外临时目录，使用已安装的 Microsoft Edge 155.0.4283.45，无头、chromiumSandbox=true、独立浏览器上下文，网络只允许localhost/127.0.0.1。没有向项目 package.json/package-lock 加浏览器依赖，没有下载新浏览器或修改系统权限。
+本轮使用 Playwright 执行浏览器验证。Playwright 1.56.1安装在项目外临时目录，使用已安装的 Microsoft Edge 155.0.4283.45，无头、chromiumSandbox=true、独立浏览器上下文，网络只允许localhost/127.0.0.1。没有向项目 package.json/package-lock 加浏览器依赖，没有下载新浏览器或修改系统权限。
 
 `deploy/upgrade/smoke-local.ps1 -WithFrontend -BrowserScript <临时脚本>` 启动本轮进程，健康后执行8项HTTP检查和浏览器检查，finally停止本轮Java/Node进程。完整启动命令见runbook。浏览器报告独立于HTTP报告，截图在成功提示自然消失后截取，没有隐藏界面元素伪造效果。
 
@@ -49,14 +48,13 @@ HTTP与浏览器组合冒烟共9项PASS，浏览器自身7项PASS。最新清晰
 
 临时脚本及依赖、报告和截图均位于下面的项目外目录，不提交到仓库。换机器后此目录可能不存在，需要另外配置浏览器验收工具。
 
-`C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/`
+`[历史本机验证资料，未随仓库公开]`
 
-- [桌面会议室](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/browser-evidence/desktop-rooms.png)
-- [桌面本人订单已取消](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/browser-evidence/desktop-cancelled.png)
-- [手机会议室](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/browser-evidence/mobile-rooms.png)
-- [手机预约弹窗](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/browser-evidence/mobile-booking.png)
-- [机器可读报告](C:/Users/11707/.codex/visualizations/2026/10/14/01a13869-82c6-7460-b7a2-9081378d5177/browser-evidence/report.json)
-
+- 桌面会议室：历史本机证据，未纳入公开仓库。
+- 桌面本人订单已取消：历史本机证据，未纳入公开仓库。
+- 手机会议室：历史本机证据，未纳入公开仓库。
+- 手机预约弹窗：历史本机证据，未纳入公开仓库。
+- 机器可读报告：历史本机证据，未纳入公开仓库。
 ## 未覆盖范围
 
 本轮没有运行真实MySQL、Redis Lua、RocketMQ broker或Nacos发现，也没有Docker容器证据；H2验证不替代这些项目。其他浏览器、更多手机尺寸、辅助技术可访问性和浏览器网络层“响应已丢失后重试”未执行；相同payload复用requestId、异参数换键、失败取消重试已有Node行为测试，越权等由实际MVC测试验证，不能把这些称为所有浏览器场景均覆盖。
