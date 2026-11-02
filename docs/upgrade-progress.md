@@ -138,8 +138,8 @@ Task 5：前端早期 Node 行为测试6/6与构建通过；最终8/8结果见�
 
 ## 2026-10-17 前后端目录整理收尾
 
-- 基于稳定提交 `a29823e` 在 `目录迁移工作分支` 整理：Vue 工程归入 frontend，Maven 父工程及四个模块归入 backend，原预约模块更名为 booking-service；Compose 和 Dockerfile 归入 deploy。只调整目录与引用，Java/SQL/业务前端及原测试保持原内容。
+- 2026-10-17 基于稳定提交 `a29823e` 完成前后端目录整理：Vue 工程归入 `frontend/`，Maven 后端四模块归入 `backend/`，Compose 与 Dockerfile 归入 `deploy/`。本条是当时的迁移记录，迁移本身不涉及新增业务功能；项目随后已发布至 GitHub。
 - 新布局 Maven verify 110/110，前端 15/15、类型检查/构建与开发 HTTP 通过；安装复用本地缓存，未验证全新联网下载。探针隔离 57/57、四种 Compose config 和 40 项源路径检查通过。
 - 三个真实 JAR 与 Vite 已完成 8/8 冒烟，覆盖 Vite `/api` → Gateway → 业务服务、HTTP Feign、预约幂等、取消及 Outbox。使用新建内存 H2、MQ/Nacos 关闭，未执行浏览器，不能冒充真实中间件验收。
 - Docker 两次只读检查均为本地 desktop-linux pipe 不存在，因此本次镜像构建、容器启动/健康及真实中间件回归未执行。保留所有原数据、卷、私有环境、备份与历史日志。
-- 独立目录复核无遗留问题，206 个基线文件全部保留，完整源码树 211 个文件；README、project-structure、runbook 和验收文档已同步。敏感配置、缓存和产物继续忽略，目录整理仅创建本地提交，不推送；完整证据见 [directory-layout-verification.md](directory-layout-verification.md)。
+- 2026-10-17 完成目录迁移复核：206 个基线文件全部保留，当时整理后的源码目录树包含 211 个文件；README、project-structure、runbook 及验收文档完成同步。敏感配置、依赖缓存和构建产物均未纳入版本控制。当时目录迁移只保存为本地提交，后续已发布至 GitHub。以上数据属于该阶段的历史验收结果，当前项目状态和运行说明以 README 及后续提交为准。完整证据见 [directory-layout-verification.md](directory-layout-verification.md)。

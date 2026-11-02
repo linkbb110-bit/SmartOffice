@@ -8,7 +8,9 @@ Java17、Maven3.9.x、Node.js（本机验证24.11.1）与 npm；完整部署需�
 
 目录迁移后 Vite 配置名为 `frontend/vite.config.ts`，保留 `--configLoader native`。宿主使用已验证的 Node 24.11.1，Node 22 至少需 22.18 默认 TypeScript 支持（[官方说明](https://nodejs.org/docs/latest-v22.x/api/typescript.html#modules-typescript)）；旧缓存 Node 22 镜像也须核对实际版本。本轮 Engine 不可用，不能把宿主构建成功称为 Docker Node 22 镜像构建成功。
 
-项目已有本地稳定基线 `a29823e`，2026-10-17 在 `目录迁移工作分支` 分支分离前后端目录，没有推送。原源码归档 `.upgrade-backup/original-2026-10-14.zip`；另有保留目录结构的 `original-sources-layout-2026-10-14.zip`，旧环境文件单独保留 `.env.development.original`/`.env.production.original`。这些备份与真实环境文件被 git/docker ignore。恢复应解压到独立目录核对，避免覆盖正在使用的项目。
+2026-10-17 的目录迁移以本地稳定基线 `a29823e` 为起点。迁移阶段“尚未推送”的描述仅代表当时的状态；项目代码后来已发布至 GitHub。当前构建与启动步骤以本文及仓库 README 为准。
+
+原始源码备份、数据库数据、日志与私有 `.env` 配置不纳入 Git 版本控制。需要恢复旧版时，先备份现有数据，在独立目录操作，避免覆盖当前项目。
 
 不自动连接现有数据库。升级 Compose 使用两个新 MySQL、独立账号/新项目卷，原 `deploy/docker-compose.dev.yml` 和原数据卷保留。`deploy/run-host.sh` 是原单体部署示例，升级版使用本页和 `deploy/docker-compose.upgrade.yml`。任何真实云部署不在本次授权范围。
 
