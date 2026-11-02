@@ -34,7 +34,7 @@ smartoffice-rebuilt/
 └── README.md
 ```
 
-模块职责与独立开发入口见 [project-structure.md](docs/project-structure.md)，完整源码目录树见 [directory-tree.txt](docs/directory-tree.txt)。依赖、构建产物、日志、IDE 配置与备份均被忽略，不属于源码。现有缓存仅为复用保留，不纳入 Git。
+模块职责与独立开发入口见 [项目结构说明](docs/project-structure.md)。完整文件清单以当前 GitHub 仓库目录为准。依赖、构建产物、日志、IDE 配置与备份均被忽略，不属于源码。现有缓存仅为复用保留，不纳入 Git。
 
 三个服务注册名仍为 `smartoffice-gateway`、`smartoffice-user-service`、`smartoffice-booking-service`，shared 只生成公共 JAR。预约以 MySQL 房间行锁、READ_COMMITTED、requestId 唯一键与取消 CAS 保证一致性；Redis 用于辅助锁和缓存，Outbox 与 RocketMQ 用于至少一次事件投递。
 
@@ -45,7 +45,7 @@ smartoffice-rebuilt/
 ```powershell
 # 从仓库根进入前端
 Set-Location frontend
-npm install
+npm ci
 npm test
 npm run build
 # 连接完整 Docker 环境映射到宿主的 Gateway
@@ -57,7 +57,7 @@ npm run dev
 
 ## Windows PowerShell：后端与 IDEA
 
-2026-10-20 的 **Docker 中间件 + IDEA 宿主 Java + Knife4j** 开发方式见 [开发环境恢复与每日命令](docs/docker-development-recovery.md)。该方式使用独立 host-dev Compose 覆盖及 ignored 宿主配置，与下方全容器演示分开启动。
+宿主 IDEA + Docker 中间件的混合开发模式可参考 `deploy/docker-compose.host-dev.yml`；此模式与下方的全容器演示相互独立，启动前应核对环境变量和数据库连接。通用命令见 [运行手册](docs/runbook.md)。
 
 ```powershell
 # 新终端，从仓库根进入 backend
@@ -110,4 +110,6 @@ docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.y
 - [运行手册](docs/runbook.md)、[升级进度](docs/upgrade-progress.md)
 - [面试笔记](docs/interview-notes.md)、[历史浏览器记录](docs/browser-qa.md)
 
-原稳定基线为本地 a29823e；目录整理在独立分支进行，不推送远程仓库。历史文档、补丁和原始备份继续保留。
+**最近一次本地自动化验证（2026-11-01）**：Java 17 / Maven `clean verify`，后端 119 项测试通过、0 失败、0 错误、0 跳过；前端 `npm test` 15 项通过，`npm run build` 成功。使用了 H2/MockMvc 等工程级验证；这些结果不代表本次重新完成生产环境、真实中间件或多副本高可用验收。历史真实中间件验证按报告的日期和版本理解。`backend/user-service` 的 H2 测试驱动配置已修复。
+
+私有 `.env`、本机故障恢复记录和本地备份不作为仓库公开运行说明；公开文档只保留能够复用的启动步骤、架构和验证边界。

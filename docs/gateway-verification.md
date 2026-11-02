@@ -16,7 +16,7 @@ Java RouteLocator 仅允许 `/users/**`（用户服务）及 `/rooms/**`、`/ord
 
 RED：`mvn -pl gateway -am test` exit 1，首次下载 Gateway/Nacos 依赖后，因缺少 GatewayApplication 的 `@SpringBootConfiguration` 明确失败。补齐实现后的 GREEN：`mvn -B -ntp -pl gateway -am test` exit 0，**6 tests / 0 failures / 0 errors / 0 skipped，BUILD SUCCESS，20.236 s**（11:52:38）。此轮运行环境 Java 21.0.6，编译 release 17，Boot 3.5.13、Cloud Gateway 4.3.0。
 
-按主代理统一要求完成最终 Java 17 打包验证：
+完成最终 Java 17 打包验证：
 
 ```powershell
 $env:JAVA_HOME='C:/Program Files/Java/jdk-17'

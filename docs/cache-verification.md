@@ -37,13 +37,13 @@ GREEN 阶段：**19 tests / 0 failures / 0 errors / 0 skipped，BUILD SUCCESS，
 - RoomBloomFilterInitializerTest：1 个启动降级测试。
 - MeetingRoomAdministrationTransactionTest：5 个 H2 真实 SQL/事务测试，验证活动预约阻止逻辑删除、历史订单保留、只在提交后失效、回滚不失效、维修保留既有预约、提交后 Bloom 故障不反转新增（部分行为共用一个测试）。
 
-随后新增第 20 个测试：H2 中管理员删除与真实预约写入同时竞争，断言只有预约成功/删除409，或删除成功/预约404两种结果，绝不能删除房间后留下活动订单。该新增测试需在主代理 reactor 迁移稳定后执行；截至本记录写入时未运行。
+随后新增第 20 个测试：H2 中管理员删除与真实预约写入同时竞争，断言只有预约成功/删除409，或删除成功/预约404两种结果，绝不能删除房间后留下活动订单。该新增测试需在 Maven reactor 迁移稳定后执行；截至本记录写入时未运行。
 
 ## 未运行和限制
 
-没有真实 Redis 服务或 MySQL 服务验证。本轮没有执行 Lua 脚本、真实 Redis 集群 hash slot/TTL/连接故障、Redisson 加载锁竞争或真实 Redis 停机启动检查；fake-store 测试证明算法边界，不代表 Redis 实现已集成验证。H2 验证真实事务与 SQL，但不等价于 MySQL 的实际锁行为。完整 Maven suite 与新 reactor 校验由主代理统一执行，避免并发编译目录干扰。
+没有真实 Redis 服务或 MySQL 服务验证。本轮没有执行 Lua 脚本、真实 Redis 集群 hash slot/TTL/连接故障、Redisson 加载锁竞争或真实 Redis 停机启动检查；fake-store 测试证明算法边界，不代表 Redis 实现已集成验证。H2 验证真实事务与 SQL，但不等价于 MySQL 的实际锁行为。完整 Maven suite 与新 reactor 校验统一执行，避免并发编译目录干扰。
 
-## 主代理最终聚合验证
+## 最终聚合验证
 
 新增第20项管理员删除/预约并发回归已在Java17根clean verify通过。缓存相关20/20、当时整个reactor96/96，0失败/错误/跳过；恢复后最新verify为97/97，包含新增HTTP错误回归。当前命令应使用根目录mvn -pl backend -am test。原单模块命令仅是当时执行记录。真实三JAR/H2 HTTP及浏览器还验证Redis不可用的预约与取消降级；实际Redis Lua仍未运行。
 

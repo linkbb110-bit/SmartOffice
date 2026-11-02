@@ -32,14 +32,14 @@ PowerShell 验证命令：
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
-& 'D:\apache-maven-3.9.4-bin\apache-maven-3.9.4\bin\mvn.cmd' -B -ntp -pl user-service -am test
+& 'mvn' -B -ntp -pl user-service -am test
 ```
 
 当前机器默认 Oracle javapath shim 在沙箱中返回 `Access is denied`；指定 Java 17 后，沙箱中的测试 fork 仍阻塞。本次通过标准 `require_escalated` 执行已授权的本地 H2/MockMvc 测试，没有修改系统配置或全局 Maven settings。
 
 ## RED → GREEN 证据（2026-10-14）
 
-最初 `user-red.log` 在共享模块编译失败，缺 `spring-tx` 的 `DuplicateKeyException`，未执行用户 API，不能视为功能 RED。主代理修复模块依赖后，实际测试结果为：
+最初 `user-red.log` 在共享模块编译失败，缺 `spring-tx` 的 `DuplicateKeyException`，未执行用户 API，不能视为功能 RED。修复模块依赖后，实际测试结果为：
 
 | 日志/阶段 | 真实结果 |
 | --- | --- |
@@ -51,4 +51,4 @@ GREEN 包含保留的 `JwtServiceTest` 1 项、JWT 新验证 16 项、原公共�
 
 覆盖的 API 行为包括：注册保存可匹配 BCrypt 且不能提权、重复与已逻辑删除用户名返回 409、用户名非法返回 400、24 个中文字符（72 UTF-8 字节）可注册而 25 个中文字符被拒绝、73 位 ASCII 密码被拒绝、登录 token 兼容、me 读数据库身份且不暴露密码、物理或逻辑删除用户 401、匿名/非法 JWT 401、缺声明 JWT 不触发 500、健康根路径与 liveness 匿名成功、info 和非 POST 认证路由仍受保护。
 
-JWT 测试包括签名不匹配、过期、缺少 uid/role/expiration、非正或小数 uid、空 subject、无效角色，以及空密钥/非正有效期。以上为 H2/MockMvc 与真实 JWT 编解码证据，不代表 Docker 或生产环境运行验证。整仓库 `clean verify` 由主代理在模块合并后执行并另行记录。
+JWT 测试包括签名不匹配、过期、缺少 uid/role/expiration、非正或小数 uid、空 subject、无效角色，以及空密钥/非正有效期。以上为 H2/MockMvc 与真实 JWT 编解码证据，不代表 Docker 或生产环境运行验证。整仓库 `clean verify` 在模块合并后另行执行并记录。
