@@ -25,7 +25,7 @@
 在仓库根目录执行。示例文件只含可识别的本地占位值，没有真实密钥。以下脚本首次生成 `.env.upgrade`，若已有文件则保留；文件已被 `.gitignore` 和 `.dockerignore` 排除。
 
 ```powershell
-Set-Location 'C:\Users\11707\Desktop\smartoffice-rebuilt'
+Set-Location '<本地仓库根目录>'
 if (-not (Test-Path -LiteralPath '.env.upgrade')) {
     function New-LocalSecret {
         $secretBytes = New-Object byte[] 48

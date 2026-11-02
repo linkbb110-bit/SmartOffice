@@ -1,6 +1,6 @@
 # SmartOffice 项目结构与开发入口
 
-前端、后端与部署配置已分离。本文说明当前目录，历史迁移过程和测试证据见 [directory-layout-verification.md](directory-layout-verification.md)；完整逐文件目录树见 [directory-tree.txt](directory-tree.txt)。
+前端、后端与部署配置已分离。本文说明模块目录与开发入口；历史目录迁移过程和测试边界见 [directory-layout-verification.md](directory-layout-verification.md)。完整文件清单请以当前仓库目录为准。
 
 ## 目录结构
 

@@ -1,10 +1,13 @@
 # 前后端目录整理与验收
 
+> 历史记录：本文记录 2026-10-17 的目录迁移阶段，不能代表当前公开 `main` 分支的最新测试或部署状态。现行启动说明以 [README](../README.md) 和 [runbook](runbook.md) 为准。
+
+
 日期：2026-10-17（Asia/Shanghai）。基线 `a29823e`，执行分支 `目录迁移工作分支`；迁移开始时工作区干净。范围仅为目录、构建/部署路径及文档，未增加组件、功能或业务重构。
 
 ## 目录与映射
 
-模块职责和当前开发入口见 [project-structure.md](project-structure.md)，完整源码树见 [directory-tree.txt](directory-tree.txt)，只列受版本控制的文件；不将 node_modules、dist、target、logs、IDE 配置、私有环境与备份当作源码。
+模块职责和当前开发入口见 [project-structure.md](project-structure.md)。完整文件列表以当前仓库为准；node_modules、dist、target、logs、IDE 配置、私有环境与备份均不视作受版本控制的源码。
 
 | 原路径（基线） | 当前路径 | 说明 |
 | --- | --- | --- |
@@ -85,8 +88,8 @@
 
 - `Review directory layout` 独立只读复核完成，未发现剩余阻塞问题或需修正的路径遗漏；POM、Docker COPY/context/mount、Compose 项目与卷身份、脚本和文档入口一致。原 206 个文件均保留，当前完整源码树共 211 个文件。
 - 已核对上表实际日志和退出结果；恢复收尾阶段没有重复运行已通过的完整测试。三 JAR + Vite 的 8 项冒烟已经完成，其中 API 请求从 Vite 的 `/api` 进入 Gateway，再调用两个业务服务，包含真实 HTTP Feign；该验证依然只使用内存 H2。
-- `README.md`、`project-structure.md`、`runbook.md` 和完整 `directory-tree.txt` 已同步；历史证据与当前结果明确区分。IDEA 的导入路径和 POM 结构已检查，未实际操作 IDEA GUI。
+- `README.md`、`project-structure.md` 和 `runbook.md` 在当时已同步；历史证据与当前结果明确区分。IDEA 的导入路径和 POM 结构已检查，未实际操作 IDEA GUI。
 - Git 暂存前后检查文件映射、未改动业务 blob、忽略规则及私有值泄露；只保存迁移源码、配置、测试与文档，不包含私有 env、依赖缓存、构建产物、日志、数据库数据或备份。检查结果保存在 ignored `source-and-hygiene.json`。
-- 本次只在 `目录迁移工作分支` 保存一次本地目录迁移提交，保留 `a29823e` 作为父提交，不推送；提交标识以 `git log -1 --oneline` 和本轮完成回复为准。
+- 此条为历史迁移阶段的 Git 状态：当时仅保存本地分支，未推送；后续代码已公开发布，不应将当时的未推送状态视为当前仓库状态。
 
 目录整理范围已收尾。真实容器、迁移后的真实中间件及浏览器回归仍按上文标记为未执行，不将历史验收或本轮 H2 结果算作通过。

@@ -37,7 +37,7 @@
 
 建议后续在服务启动后手动或通过浏览器运行：登录/注册 → 房间预约 → 快速双击提交 → 我的预约 → 取消 → 查看已取消状态；同时模拟预约请求已被服务端处理但响应丢失，检查相同参数重试只生成一个订单。需要网关、后端、数据库可用后才能验证真实接口与并发结果。
 
-## 主代理最终集成验证
+## 最终集成验证
 
 独立审查发现原.env.development/.production仍直连8081；先备份到ignored .upgrade-backup，再改/api并同步示例。Vite实际mode解析回归先RED（两模式8081），后GREEN。恢复后npm test 8/8、vue-tsc+build通过（1675modules，6.54s）；frontend-resumed-final.log。本地Vite→Gateway→真实用户/预约JAR（H2）HTTP与浏览器交互已通过。浏览器发现并修复容量SVG没有尺寸、480px预约弹窗手机裁切，以及本地CORS来源漏项；生产端仍保持同源/api。
 

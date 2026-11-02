@@ -1,6 +1,6 @@
 # 本地运行、验证与故障排查
 
-2026-10-20 本机 Docker 恢复、历史数据盘保留、宿主 IDEA/Knife4j 的配置与实际结果见 [docker-development-recovery.md](docker-development-recovery.md)。IDEA 模式需要新增 host-dev 覆盖；不要把该覆盖与全部 Java 容器同时启动。
+本文用于通用开发环境。宿主 IDEA + Docker 中间件的混合模式使用 `deploy/docker-compose.host-dev.yml`，不要与全容器 Compose 启动混用；个人机器的 Docker 恢复过程和私有环境文件不属于公开运行手册。
 
 ## 环境与安全边界
 
@@ -71,9 +71,9 @@ docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.y
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
-# 根据自己的 Maven localRepository 调整；本机实际驱动位置如下。
+# 根据本机 Maven localRepository 定位 H2 JAR；勿直接使用其他人的机器路径。
 ./deploy/upgrade/smoke-local.ps1 `
-  -H2Jar 'D:\download\apache-maven-3.9.4-bin\apache-maven-3.9.4\mvn_repo\com\h2database\h2\2.3.232\h2-2.3.232.jar' `
+  -H2Jar '<本机 Maven 缓存中的 H2 JAR 绝对路径>' `
   -WithFrontend
 ```
 
@@ -83,7 +83,7 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 
 ```powershell
 ./deploy/upgrade/smoke-local.ps1 `
-  -H2Jar 'D:\download\apache-maven-3.9.4-bin\apache-maven-3.9.4\mvn_repo\com\h2database\h2\2.3.232\h2-2.3.232.jar' `
+  -H2Jar '<本机 Maven 缓存中的 H2 JAR 绝对路径>' `
   -WithFrontend `
   -BrowserScript '[历史本机验证资料，未随仓库公开]'
 ```
