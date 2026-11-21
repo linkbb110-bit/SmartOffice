@@ -1,286 +1,45 @@
 <template>
-  <main class="room-page">
-    <header class="topbar">
-      <div class="title-block">
-        <p>SmartOffice</p>
-        <h1>会议室预定</h1>
-      </div>
-      <div class="topbar-actions">
-        <ElButton @click="ordersVisible = true">我的预约</ElButton>
-        <ElButton :icon="Refresh" :loading="loading" circle aria-label="刷新会议室" @click="fetchRooms" />
-      </div>
-    </header>
-
-    <section v-loading="loading" class="room-grid" element-loading-text="加载会议室中">
-      <ElEmpty v-if="!loading && rooms.length === 0" description="暂无会议室数据" />
-
-      <TransitionGroup v-else name="room-card" tag="div" class="room-grid-inner">
-        <ElCard
-          v-for="room in rooms"
-          :key="room.id"
-          class="room-card"
-          shadow="never"
-          body-class="room-card-body"
-        >
-          <div class="room-card-header">
-            <div class="room-icon">
-              <Monitor :size="24" />
-            </div>
-            <ElTag :type="room.status === 1 ? 'success' : 'info'" effect="light">
-              {{ room.status === 1 ? "可预定" : "维护中" }}
-            </ElTag>
-          </div>
-
-          <h2>{{ room.roomName }}</h2>
-          <div class="capacity">
-            <ElIcon :size="18" aria-hidden="true"><UserFilled /></ElIcon>
-            <span>容纳 {{ room.capacity }} 人</span>
-          </div>
-
-          <div class="equipment">
-            <ElTag
-              v-for="item in normalizeEquipment(room.equipment)"
-              :key="`${room.id}-${item}`"
-              round
-            >
-              {{ item }}
-            </ElTag>
-            <ElTag v-if="normalizeEquipment(room.equipment).length === 0" type="info" round>
-              暂无设备
-            </ElTag>
-          </div>
-
-          <template #footer>
-            <ElButton
-              type="primary"
-              :icon="Calendar"
-              :disabled="room.status !== 1"
-              @click="openBookModal(room)"
-            >
-              立即预定
-            </ElButton>
-          </template>
-        </ElCard>
-      </TransitionGroup>
-    </section>
-
-    <BookModal v-model="bookVisible" :room="selectedRoom" @success="fetchRooms" />
-    <MyOrders v-model="ordersVisible" :rooms="rooms" @canceled="fetchRooms" />
-  </main>
+  <section>
+    <PageHeading title="会议室预约" description="选择适合的会议空间，安排下一场讨论"><ElButton :icon="Refresh" :loading="loading" @click="refresh">刷新</ElButton><ElButton @click="$router.push('/bookings')">我的预约</ElButton></PageHeading>
+    <div class="filter-bar surface"><ElInput v-model="keyword" clearable placeholder="搜索会议室名称" aria-label="会议室名称" /><ElInputNumber v-model="capacity" :min="1" :max="30" placeholder="最少人数" aria-label="最少容量" /><ElSelect v-model="status" clearable placeholder="全部状态" aria-label="会议室状态"><ElOption label="可发起预约" :value="1" /><ElOption label="维护中" :value="0" /></ElSelect><span class="muted">共 {{ filtered.length }} 间</span></div>
+    <LoadError :message="error" @retry="refresh" />
+    <div v-loading="loading" class="room-grid-inner">
+      <ElCard v-for="room in filtered" :key="room.id" class="room-card" shadow="never">
+        <div class="room-card-header"><ElIcon :size="25" class="room-icon"><Monitor /></ElIcon><ElTag :type="room.status === 1 ? 'success' : 'info'">{{ room.status === 1 ? '可发起预约' : '维护中' }}</ElTag></div>
+        <h2>{{ room.roomName }}</h2><p class="muted"><ElIcon><UserFilled /></ElIcon> 容纳 {{ room.capacity }} 人</p>
+        <div class="equipment"><ElTag v-for="item in normalizeEquipment(room.equipment)" :key="item" type="info" effect="plain">{{ item }}</ElTag><span v-if="!normalizeEquipment(room.equipment).length" class="muted">暂无设备信息</span></div>
+        <template #footer><ElButton type="primary" :disabled="room.status !== 1" :icon="Calendar" @click="openBooking(room)">立即预约</ElButton></template>
+      </ElCard>
+    </div>
+    <ElEmpty v-if="!loading && !error && !filtered.length" description="暂无符合条件的会议室" />
+    <p class="data-caption">可发起预约不代表指定时段空闲，时间冲突由提交时的后端校验决定。</p>
+    <BookModal v-model="bookVisible" :room="selectedRoom" @success="refresh" />
+  </section>
 </template>
-
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { Calendar, Monitor, Refresh, UserFilled } from "@element-plus/icons-vue";
-
-import { getRoomListApi } from "@/api/rooms";
-import BookModal from "@/components/BookModal.vue";
-import MyOrders from "@/components/MyOrders.vue";
-import type { Room } from "@/types/room";
-
-const loading = ref(false);
-const rooms = ref<Room[]>([]);
-const bookVisible = ref(false);
-const ordersVisible = ref(false);
-const selectedRoom = ref<Room | null>(null);
-
-function normalizeEquipment(equipment: Room["equipment"]) {
-  if (Array.isArray(equipment)) {
-    return equipment.filter(Boolean);
-  }
-
-  if (!equipment) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(equipment);
-    if (Array.isArray(parsed)) {
-      return parsed.filter(Boolean);
-    }
-  } catch {
-    // The backend may return comma-separated text for legacy records.
-  }
-
-  return equipment
-    .split(/[,，、]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-async function fetchRooms() {
-  loading.value = true;
-  try {
-    rooms.value = await getRoomListApi();
-  } catch {
-    // The request interceptor displays the error; users can refresh to retry.
-  } finally {
-    loading.value = false;
-  }
-}
-
-function openBookModal(room: Room) {
-  selectedRoom.value = room;
-  bookVisible.value = true;
-}
-
-onMounted(fetchRooms);
+import { computed, onMounted, ref } from 'vue';
+import { Calendar, Monitor, Refresh, UserFilled } from '@element-plus/icons-vue';
+import PageHeading from '@/components/PageHeading.vue';
+import LoadError from '@/components/LoadError.vue';
+import BookModal from '@/components/BookModal.vue';
+import { getRoomListApi } from '@/api/rooms';
+import { useQuery } from '@/composables/useQuery';
+import { filterRooms, normalizeEquipment } from '@/utils/console';
+import type { Room } from '@/types/room';
+const { data, loading, error, refresh } = useQuery(getRoomListApi);
+const keyword = ref(''), capacity = ref<number | null>(null), status = ref<number | null>(null);
+const bookVisible = ref(false), selectedRoom = ref<Room | null>(null);
+const filtered = computed(() => filterRooms(data.value || [], keyword.value, capacity.value ?? null, status.value ?? null));
+function openBooking(room: Room) { selectedRoom.value = room; bookVisible.value = true; }
+onMounted(refresh);
 </script>
-
 <style scoped>
-.room-page {
-  min-height: 100vh;
-  padding: 32px;
-  background:
-    linear-gradient(180deg, rgba(232, 241, 255, 0.9), rgba(245, 247, 251, 0.86) 280px),
-    #f5f7fb;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1180px;
-  margin: 0 auto 24px;
-}
-
-.topbar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.topbar-actions :deep(.el-button + .el-button) { margin-left: 0; }
-
-.title-block p {
-  margin: 0 0 6px;
-  color: #2563eb;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.title-block h1 {
-  margin: 0;
-  color: #111827;
-  font-size: 30px;
-  line-height: 1.25;
-  letter-spacing: 0;
-}
-
-.room-grid {
-  max-width: 1180px;
-  min-height: 360px;
-  margin: 0 auto;
-}
-
-.room-grid-inner {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.room-card {
-  overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-
-.room-card:hover {
-  border-color: rgba(37, 99, 235, 0.28);
-  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.12);
-  transform: translateY(-3px);
-}
-
-:deep(.room-card-body) {
-  min-height: 220px;
-  padding: 22px;
-}
-
-.room-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.room-icon {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border-radius: 8px;
-  color: #1666d8;
-  background: #eaf2ff;
-}
-
-.room-card h2 {
-  overflow-wrap: anywhere;
-  min-height: 54px;
-  margin: 0 0 12px;
-  color: #111827;
-  font-size: 20px;
-  line-height: 1.35;
-  letter-spacing: 0;
-}
-
-.capacity {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 18px;
-  color: #4b5563;
-  font-size: 14px;
-}
-
-.equipment {
-  display: flex;
-  min-height: 64px;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 8px;
-}
-
-:deep(.el-card__footer) {
-  padding: 16px 22px 20px;
-  border-top: 0;
-}
-
-:deep(.el-card__footer .el-button) {
-  width: 100%;
-}
-
-.room-card-enter-active,
-.room-card-leave-active {
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
-}
-
-.room-card-enter-from,
-.room-card-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-@media (max-width: 640px) {
-  .room-page {
-    padding: 24px 16px;
-  }
-
-  .topbar {
-    align-items: flex-start;
-  }
-
-  .title-block h1 {
-    font-size: 26px;
-  }
-}
+.room-grid-inner { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; min-height: 120px; }
+.room-card { border-radius: 8px; transition: border-color .18s; }
+.room-card:hover { border-color: #b6cdf9; }
+.room-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.room-icon { color: #2563eb; background: #eff5ff; width: 46px; height: 46px; border-radius: 8px; }
+.room-card h2 { font-size: 18px; overflow-wrap: anywhere; }
+.equipment { min-height: 52px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; margin-top: 18px; }
+.room-card :deep(.el-card__footer .el-button) { width: 100%; }
 </style>
