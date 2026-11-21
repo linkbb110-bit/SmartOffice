@@ -1,8 +1,9 @@
-import { onScopeDispose, ref, shallowRef } from 'vue';
+import { onScopeDispose, ref, type Ref } from 'vue';
 import { errorMessage } from '@/utils/console';
 
 export function useQuery<T>(fetcher: () => Promise<T>) {
-  const data = shallowRef<T | null>(null), loading = ref(false), error = ref('');
+  // API 返回普通 JSON 对象，行状态的修改也需要触发筛选、计数与分页更新。
+  const data = ref<T | null>(null) as Ref<T | null>, loading = ref(false), error = ref('');
   let revision = 0;
   onScopeDispose(() => { revision++; });
   async function refresh() {

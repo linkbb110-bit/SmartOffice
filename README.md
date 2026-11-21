@@ -55,6 +55,10 @@ npm run dev
 
 开发页默认 `http://localhost:5173`。若 Gateway 直接在宿主运行，将代理目标改为 `http://127.0.0.1:8080`。开发与生产浏览器均访问 `/api`，由 Vite/Nginx 转发。私有前端环境放 `frontend/.env.*.local`，不要将密钥放入会被打包的 `VITE_*` 变量。
 
+SO-UI-001 后台入口为 `/dashboard`，登录后可进入会议室预约、独立我的预约、通知中心和个人中心。ADMIN 额外显示会议室管理、全部预约/CSV 导出、Outbox 监控；服务端继续执行权限校验。通知及个人资料为真实 API 支持的只读展示，Outbox 仅展示最近 100 条投递记录，不提供重投操作。
+
+2026-11-21：前端 31 项测试、类型检查与生产构建通过，27 组浏览器场景通过。浏览器连接隔离 Java/Gateway + H2 内存库，未重新验收真实 MySQL/Redis/RocketMQ 链路。完整功能、改动文件与验证边界见 [SO-UI-001 验收记录](docs/so-ui-001-acceptance.md)。
+
 ## Windows PowerShell：后端与 IDEA
 
 宿主 IDEA + Docker 中间件的混合开发模式可参考 `deploy/docker-compose.host-dev.yml`；此模式与下方的全容器演示相互独立，启动前应核对环境变量和数据库连接。通用命令见 [运行手册](docs/runbook.md)。

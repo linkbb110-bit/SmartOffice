@@ -105,6 +105,7 @@ a {
 .profile-panel .data-caption { margin-bottom: 24px; }
 .session-error { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .nav-backdrop { display: none; }
+.sidebar-close { margin: 18px 24px; }
 :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
 @media (max-width: 1200px) { .dashboard-columns { grid-template-columns: 1fr; } .dashboard-columns > .surface { min-height: 260px; } }
 @media (max-width: 900px) {
