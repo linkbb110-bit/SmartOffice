@@ -1,8 +1,8 @@
 # SO-UI-001 两阶段实施与验收
 
-日期：2026-11-21。项目：`D:\A-project\smartoffice-rebuilt`。分支：`feat/admin-console`，基于 `541e034`；不合并 main。
+日期：2026-11-21。分支：`feat/admin-console`，基于 `541e034`。本文记录发布前的两阶段实施与验证。
 
-PR：[SO-UI-001 后台两阶段实现 #4](https://github.com/linkbb110-bit/SmartOffice/pull/4)，已打开，未合并。
+PR：[SO-UI-001 后台两阶段实现 #4](https://github.com/linkbb110-bit/SmartOffice/pull/4)，发布状态以 PR 记录为准。
 
 本文件记录初次 H2 验收。随后已完成独立真实 MySQL/Redis/RocketMQ 的最终验收，包括实际消息投递与通知消费，见 [2026-11-21 真实环境报告](so-ui-001-real-environment-acceptance-20261121.md)。以下初次验收边界保留为历史记录，以最终报告为最新结果。
 
@@ -52,7 +52,7 @@ PR：[SO-UI-001 后台两阶段实现 #4](https://github.com/linkbb110-bit/Smart
 
 ## 验证环境及边界
 
-- 内置浏览器桥接报错 `privileged native pipe bridge is not available; browser-client is not trusted`，改用本机已有 Playwright/Chromium，没有增加前端依赖。
+- 使用项目外已有 Playwright/Chromium 完成浏览器验证，没有增加前端运行依赖。
 - 使用现有 Java 17 服务 JAR 启动独立回环端口、H2 内存库和单独 Vite。未重编译或改动用户未提交的后端源码，未连接现有业务库。
 - Redis 不可用时使用项目原有数据库降级逻辑；MQ 和 Nacos 在隔离测试实例中关闭。已观察到真实 Outbox PENDING，未验证真实 Broker 投递、SENDING/SENT 状态迁移及新通知消费。
 - 本次未重新执行 Docker 恢复、MySQL/Redisson 高并发、中间件/多副本验收。Docker 卷、历史 VHDX、PetTravel 没有操作。
@@ -82,7 +82,7 @@ npm run dev
 
 仅前端、README 和本任务文档。原有 `BookModal.vue`、`bookingSubmission.ts`、`orderCancellation.ts` 及全部后端文件保持原样。
 
-- 文档：`README.md`、`docs/so-ui-001-api-audit.md`、`docs/so-ui-001-acceptance.md`、`docs/superpowers/specs/2026-11-21-so-ui-001-admin-console-design.md`、`docs/superpowers/plans/2026-11-21-admin-console.md`。
+- 文档：`README.md`、`docs/so-ui-001-api-audit.md`、`docs/so-ui-001-acceptance.md`、[后台设计](design/admin-console.md)、[实施计划](plans/admin-console.md)。
 - 页面：`frontend/src/views/AdminBookings.vue`、`AdminRooms.vue`、`Dashboard.vue`、`Login.vue`、`MyBookings.vue`、`Notifications.vue`、`Outbox.vue`、`Profile.vue`、`RoomList.vue`、`RouteError.vue`、`SessionError.vue`。
 - 布局与通用组件：`frontend/src/layouts/AdminLayout.vue`、`frontend/src/components/BookingTable.vue`、`LoadError.vue`、`PageHeading.vue`、`frontend/src/styles/global.css`。
 - API：`frontend/src/api/auth.ts`、`notifications.ts`、`orders.ts`、`outbox.ts`、`rooms.ts`。

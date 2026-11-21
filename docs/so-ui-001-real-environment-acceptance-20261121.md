@@ -1,6 +1,6 @@
 # SO-UI-001 真实中间件最终验收
 
-日期：2026-11-21，Asia/Shanghai。结论：本次要求的真实 MySQL、Redis、Gateway、用户服务、预约服务及 RocketMQ 基础投递/消费验收通过；未发现需要修改业务代码的问题。[PR #4](https://github.com/linkbb110-bit/SmartOffice/pull/4) 保持打开，未合并，等待人工确认。
+日期：2026-11-21，Asia/Shanghai。结论：本次真实 MySQL、Redis、Gateway、用户服务、预约服务及 RocketMQ 基础投递/消费验收通过；未发现需要修改业务代码的问题。本文保留 [PR #4](https://github.com/linkbb110-bit/SmartOffice/pull/4) 发布前的真实环境验收事实。
 
 后续已按用户要求整理中文演示数据：当前同一入口切换至新演示预约库，旧验收库保留，新的进程路径和初始化方式见 [中文演示数据修复记录](demo-data-cleanup-20261121.md)。下文为本次真实中间件验收时的历史环境记录。
 
@@ -147,7 +147,7 @@ Git 忽略目录 `logs/so-ui001-final-20261121` 中保留：
 - `safety-result.json`：11 卷、9 容器、13 文件、暂存及健康检查。
 - `maven-build.log`：干净源码构建记录。
 
-浏览器截图位于本机 Codex 的 `C:\Users\11707\.codex\visualizations\2026\10\21\01a15d06-fda3-7103-8747-15633f375863`，文件前缀 `so-ui001-real-`，包括预约列表、管理员列表、SENT Outbox、真实通知及手机页。本轮内置浏览器再次报 `privileged native pipe bridge is not available; browser-client is not trusted`，使用已有 Playwright/Chromium，不增加产品依赖。
+已检查预约列表、管理员列表、SENT Outbox、真实通知及手机页截图。截图为验收时的本地资料，未随仓库公开；浏览器使用已有 Playwright/Chromium，不增加产品运行依赖。
 
 未执行：生产部署、多副本/Nacos 服务发现、高并发压力、MySQL/Redis/Broker 故障注入、MQ 死信/强制重投/长期租约恢复、跨浏览器及全尺寸矩阵。这些不影响本次基础验收通过，但不应被本报告扩大解释为已通过。原 13 项未提交后端扩展没有包含在被测 PR 源码中，本报告不代替其单独验收。
 

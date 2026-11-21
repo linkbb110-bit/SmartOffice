@@ -1,6 +1,6 @@
 # 中文演示数据与展示编号修复
 
-日期：2026-11-21。当前入口仍为 `http://127.0.0.1:25173`，刷新页面即可读取新的演示数据。采用用户确认的“新建演示库、保留验收历史”方式，[PR #4](https://github.com/linkbb110-bit/SmartOffice/pull/4) 保持未合并。
+日期：2026-11-21。本文保留“新建演示库、保留验收历史”的数据整理及验收事实。本地独立演示入口示例为 `http://127.0.0.1:25173`；后续脚本重试与环境身份校验见 [发布收尾记录](pr4-release-checks-20261121.md)，发布状态以 [PR #4](https://github.com/linkbb110-bit/SmartOffice/pull/4) 为准。
 
 ## 乱码原因及修复
 
@@ -32,7 +32,7 @@ JDBC 的 UTF-8 对应 MySQL utf8mb4，连接编码由驱动配置，不通过应
 | 产品需求评审会 | 2026-11-23 10:00–11:00 | 产品评审室 | BK20261123-001 |
 | 项目周例会 | 2026-11-24 14:00–15:00 | 研发一号会议室 | BK20261124-002 |
 
-初始化脚本按执行当天选择接下来两个工作日，避免固定 2099 年。再次执行时如果当前账号已有预约，则不重复初始化。
+初版脚本按执行当天选择接下来两个工作日，并在当前账号已有任意预约时整体跳过。后续检查发现该方式无法补齐部分失败，现已改为按独立库名中的计划日期固定目标、逐条识别和稳定 requestId 重试；不再因其他正常预约而跳过，详见发布收尾记录。
 
 旧验收库 `so_ui001_booking_20261121` 继续保留：四间乱码会议室通过正常管理员 API 更新，原主键不变，缓存按原业务路径失效。原两条验收订单及相关 Outbox、通知、消费回执、审计的逐字段摘要未变。整理期间原库新增了一条“内部会议”预约，也保留在原库，因此旧库现有三单；没有因为总摘要变化而删除或覆盖这条新增记录。
 
@@ -64,10 +64,13 @@ JDBC 的 UTF-8 对应 MySQL utf8mb4，连接编码由驱动配置，不通过应
 ```powershell
 Set-Location 'D:\A-project\smartoffice-rebuilt'
 $env:SMARTOFFICE_DEMO_USERNAME = 'user'
+$env:SMARTOFFICE_DEMO_DATABASE = 'so_ui001_demo_20261121'
 $env:SMARTOFFICE_DEMO_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host '演示账号密码' -AsSecureString)).Password
 try { node deploy/upgrade/seed-demo.mjs http://127.0.0.1:25173 }
 finally { Remove-Item Env:SMARTOFFICE_DEMO_PASSWORD -ErrorAction SilentlyContinue }
 ```
+
+运行当前脚本前，需要为独立实例的 booking-service 和 Gateway 同时启用 local Profile 及 `SMARTOFFICE_DEMO_ENABLED=true`。脚本会经 Gateway 查询预约服务当前 JDBC 会话的实际库名，诊断未启用、库名不符或计划过期时拒绝写入。
 
 SQL 中的 INSERT IGNORE 不会自动修复已有乱码记录；本次已有数据的修复走了正常管理 API。没有对原业务 Compose 项目执行 up 或初始化脚本。
 
@@ -82,4 +85,4 @@ SQL 中的 INSERT IGNORE 不会自动修复已有乱码记录；本次已有数�
 
 当前 Java/Vite 进程及私有配置在 Git 忽略目录 `logs/so-ui001-demo-20261121`，数据和浏览器证据为 `data-result.json`、`browser-result.json`，完整 Maven 日志为 `maven-verify-final.log`。这些配置、日志和凭据未加入 Git。
 
-如需停止当前演示 Java/Vite，执行 `& '.\logs\so-ui001-demo-20261121\stop-apps.ps1'`；中间件仍属于独立项目 `so-ui001-final-20261121`。不使用此前历史报告中的旧进程停止脚本。保留环境供人工查看，PR 不合并。
+停止本地进程时应核对当前实例的进程记录，避免使用已失效的 PID；独立中间件仍属于验收项目 `so-ui001-final-20261121`。以上为数据整理阶段的环境记录，后续发布与运行方式见收尾记录。

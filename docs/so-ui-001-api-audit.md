@@ -2,7 +2,7 @@
 
 审计日期：2026-11-21。范围：README.md、docs/architecture.md、docs/core-flows.md、frontend/src、后端 Controller 及其直接关联 DTO/安全配置。本文是改造前审计，不代表新后台已实现或已完成真实环境验收。
 
-本地文档及仓库 Issue 检索未定位到 SO-UI-001 独立正文，暂以本次用户消息为需求来源。独立任务正文若另有约束，应在实现前合并到设计。
+需求基线与最终边界见 [后台设计](design/admin-console.md)。以下保留改造前的接口与界面现状，后续实现结果另见验收记录。
 
 ## 现有界面与可复用实现
 

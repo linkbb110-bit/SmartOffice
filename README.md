@@ -57,9 +57,9 @@ npm run dev
 
 SO-UI-001 后台入口为 `/dashboard`，登录后可进入会议室预约、独立我的预约、通知中心和个人中心。ADMIN 额外显示会议室管理、全部预约/CSV 导出、Outbox 监控；服务端继续执行权限校验。通知及个人资料为真实 API 支持的只读展示，Outbox 仅展示最近 100 条投递记录，不提供重投操作。
 
-2026-11-21：前端 31 项测试、类型检查与生产构建通过。初次 H2 验收后，已使用独立 MySQL/Redis/RocketMQ、干净 PR 源码构建的 Java/Gateway 完成 18 组真实业务验收，另通过手机键盘及八个页面健康检查；两条消息实际投递并产生通知与消费回执。详见 [真实环境最终报告](docs/so-ui-001-real-environment-acceptance-20261121.md)；完整功能及改动文件见 [初次验收记录](docs/so-ui-001-acceptance.md)。PR #4 保持未合并。
+后台的设计、实施顺序和验收边界分别见 [后台设计](docs/design/admin-console.md)、[实施计划](docs/plans/admin-console.md)、[初次验收记录](docs/so-ui-001-acceptance.md) 和 [真实环境报告](docs/so-ui-001-real-environment-acceptance-20261121.md)。真实环境报告保留了独立 MySQL/Redis/RocketMQ 的 18 组业务验收及消息消费证据。
 
-随后已修复初始化导入字符集和中文演示数据，当前 `http://127.0.0.1:25173` 使用独立演示预约库，原验收历史保留。前端现为 34 项测试通过，Java 17 `mvn verify` 119 项通过；编号只用于展示，不改真实 ID。初始化文件、运行方式及保护范围见 [中文演示数据修复记录](docs/demo-data-cleanup-20261121.md)。
+中文初始化数据使用 utf8mb4，预约编号只用于展示，不改真实 ID。[中文演示数据修复记录](docs/demo-data-cleanup-20261121.md) 保留当次 34 项前端测试与 119 项 Java 测试结果。演示预约初始化现支持逐条补齐、稳定幂等重试和实际数据库身份检查；配置及最新发布检查见 [PR #4 收尾记录](docs/pr4-release-checks-20261121.md)。
 
 ## Windows PowerShell：后端与 IDEA
 
@@ -116,6 +116,6 @@ docker compose --env-file deploy/.env.upgrade -f deploy/docker-compose.upgrade.y
 - [运行手册](docs/runbook.md)、[升级进度](docs/upgrade-progress.md)
 - [面试笔记](docs/interview-notes.md)、[历史浏览器记录](docs/browser-qa.md)
 
-**最近一次本地自动化验证（2026-11-01）**：Java 17 / Maven `clean verify`，后端 119 项测试通过、0 失败、0 错误、0 跳过；前端 `npm test` 15 项通过，`npm run build` 成功。使用了 H2/MockMvc 等工程级验证；这些结果不代表本次重新完成生产环境、真实中间件或多副本高可用验收。历史真实中间件验证按报告的日期和版本理解。`backend/user-service` 的 H2 测试驱动配置已修复。
+**历史本地自动化验证（2026-11-01）**：Java 17 / Maven `clean verify`，后端 119 项测试通过、0 失败、0 错误、0 跳过；前端 `npm test` 15 项通过，`npm run build` 成功。使用了 H2/MockMvc 等工程级验证；这些结果不代表本次重新完成生产环境、真实中间件或多副本高可用验收。历史真实中间件验证按报告的日期和版本理解。`backend/user-service` 的 H2 测试驱动配置已修复。
 
 私有 `.env`、本机故障恢复记录和本地备份不作为仓库公开运行说明；公开文档只保留能够复用的启动步骤、架构和验证边界。
