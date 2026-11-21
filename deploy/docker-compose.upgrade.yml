@@ -16,6 +16,7 @@ x-java-healthcheck: &java-healthcheck
 services:
   mysql-booking:
     image: mysql:8.0
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${BOOKING_DB_ROOT_PASSWORD:?Set BOOKING_DB_ROOT_PASSWORD}
@@ -37,6 +38,7 @@ services:
 
   mysql-user:
     image: mysql:8.0
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${USER_DB_ROOT_PASSWORD:?Set USER_DB_ROOT_PASSWORD}
@@ -147,7 +149,7 @@ services:
     restart: unless-stopped
     environment:
       <<: *java-environment
-      DB_URL: jdbc:mysql://mysql-user:3306/smartoffice_user?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      DB_URL: jdbc:mysql://mysql-user:3306/smartoffice_user?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_0900_ai_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
       DB_USERNAME: ${USER_DB_USERNAME:-smartoffice_user}
       DB_PASSWORD: ${USER_DB_PASSWORD:?Set USER_DB_PASSWORD}
     depends_on:
@@ -166,7 +168,7 @@ services:
     restart: unless-stopped
     environment:
       <<: *java-environment
-      DB_URL: jdbc:mysql://mysql-booking:3306/smartoffice_booking?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      DB_URL: jdbc:mysql://mysql-booking:3306/smartoffice_booking?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_0900_ai_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
       DB_USERNAME: ${BOOKING_DB_USERNAME:-smartoffice_booking}
       DB_PASSWORD: ${BOOKING_DB_PASSWORD:?Set BOOKING_DB_PASSWORD}
       REDIS_HOST: redis

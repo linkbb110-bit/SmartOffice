@@ -7,7 +7,7 @@
     <div class="filter-bar"><ElSelect v-model="status" clearable placeholder="全部状态" aria-label="消息状态"><ElOption v-for="(label, key) in labels" :key="key" :label="label" :value="key" /></ElSelect><span class="muted">当前显示 {{ filtered.length }} 条</span></div>
     <LoadError :message="query.error.value" @retry="query.refresh" />
     <ElTable v-if="!query.error.value" v-loading="query.loading.value" :data="filtered" row-key="event_id" empty-text="暂无 Outbox 消息">
-      <ElTableColumn prop="event_id" label="事件 ID" min-width="230" show-overflow-tooltip />
+      <ElTableColumn label="事件 ID" min-width="200"><template #default="{ row }"><ElTooltip :content="row.event_id"><span tabindex="0">{{ shortEventId(row.event_id) }}</span></ElTooltip></template></ElTableColumn>
       <ElTableColumn prop="aggregate_id" label="预约 ID" width="100" />
       <ElTableColumn prop="event_type" label="类型" min-width="170" />
       <ElTableColumn label="状态" width="110"><template #default="{ row }"><ElTag :type="row.status === 'SENT' ? 'success' : 'warning'">{{ row.status }}</ElTag></template></ElTableColumn>
@@ -41,6 +41,7 @@ import LoadError from '@/components/LoadError.vue';
 import { getOutboxApi } from '@/api/outbox';
 import { useQuery } from '@/composables/useQuery';
 import { displayTime } from '@/utils/console';
+import { shortEventId } from '@/utils/display';
 const query = useQuery(getOutboxApi), status = ref<string | null>(null), selectedId = ref<string | null>(null);
 const labels: Record<string, string> = { PENDING: '待投递', SENDING: '投递中', SENT: '已投递' };
 const filtered = computed(() => (query.data.value || []).filter(row => !status.value || row.status === status.value));

@@ -5,7 +5,7 @@
   </PageHeading>
   <section class="surface">
     <div class="filter-bar">
-      <ElInput v-model="keyword" clearable placeholder="搜索会议主题或订单 ID" aria-label="搜索预约" />
+      <ElInput v-model="keyword" clearable placeholder="搜索会议主题或预约编号" aria-label="搜索预约" />
       <ElInputNumber v-model="userId" :min="1" :precision="0" placeholder="用户 ID" aria-label="用户 ID" />
       <ElSelect v-model="status" clearable placeholder="全部状态" aria-label="预约状态"><ElOption label="已预约" :value="1" /><ElOption label="已取消" :value="2" /></ElSelect>
       <span class="muted">共 {{ filtered.length }} 条</span>

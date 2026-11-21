@@ -1,5 +1,6 @@
 import type { CurrentUser } from '../types/console';
 import type { Order, Room } from '../types/room';
+import { bookingNumber } from './display.ts';
 
 export function safeRedirect(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f]/.test(value) || /^\/(login|session-error)([/?#]|$)/.test(value)) return '/dashboard';
@@ -22,9 +23,9 @@ export function normalizeEquipment(value: Room['equipment']): string[] {
 export function filterRooms<T extends Pick<Room, 'roomName' | 'capacity' | 'status'>>(rooms: T[], keyword = '', capacity: number | null = null, status: number | null = null): T[] {
   return rooms.filter(room => room.roomName.toLocaleLowerCase().includes(keyword.trim().toLocaleLowerCase()) && (capacity == null || room.capacity >= capacity) && (status == null || room.status === status));
 }
-export function filterOrders<T extends Pick<Order, 'id' | 'topic' | 'status'>>(orders: T[], keyword = '', status: number | null = null): T[] {
+export function filterOrders<T extends Pick<Order, 'id' | 'topic' | 'status'> & Partial<Pick<Order, 'startTime'>>>(orders: T[], keyword = '', status: number | null = null): T[] {
   const query = keyword.trim().toLocaleLowerCase();
-  return orders.filter(row => (row.topic.toLocaleLowerCase().includes(query) || String(row.id).includes(query)) && (status == null || row.status === status));
+  return orders.filter(row => (row.topic.toLocaleLowerCase().includes(query) || String(row.id).includes(query) || bookingNumber(row.id, row.startTime).toLocaleLowerCase().includes(query)) && (status == null || row.status === status));
 }
 export function isToday(order: Pick<Order, 'startTime' | 'endTime' | 'status'>, now = new Date()) {
   const start = new Date(now); start.setHours(0, 0, 0, 0);

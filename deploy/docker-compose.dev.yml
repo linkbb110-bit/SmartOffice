@@ -3,6 +3,7 @@ name: smartoffice-rebuilt
 services:
   mysql:
     image: mysql:8.0
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
     container_name: smartoffice-mysql
     restart: unless-stopped
     environment:

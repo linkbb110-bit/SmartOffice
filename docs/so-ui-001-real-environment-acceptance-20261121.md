@@ -2,6 +2,8 @@
 
 日期：2026-11-21，Asia/Shanghai。结论：本次要求的真实 MySQL、Redis、Gateway、用户服务、预约服务及 RocketMQ 基础投递/消费验收通过；未发现需要修改业务代码的问题。[PR #4](https://github.com/linkbb110-bit/SmartOffice/pull/4) 保持打开，未合并，等待人工确认。
 
+后续已按用户要求整理中文演示数据：当前同一入口切换至新演示预约库，旧验收库保留，新的进程路径和初始化方式见 [中文演示数据修复记录](demo-data-cleanup-20261121.md)。下文为本次真实中间件验收时的历史环境记录。
+
 ## 验收对象与隔离方式
 
 - 项目：`D:\A-project\smartoffice-rebuilt`；分支：`feat/admin-console`。

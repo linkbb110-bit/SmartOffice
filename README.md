@@ -59,6 +59,8 @@ SO-UI-001 后台入口为 `/dashboard`，登录后可进入会议室预约、独
 
 2026-11-21：前端 31 项测试、类型检查与生产构建通过。初次 H2 验收后，已使用独立 MySQL/Redis/RocketMQ、干净 PR 源码构建的 Java/Gateway 完成 18 组真实业务验收，另通过手机键盘及八个页面健康检查；两条消息实际投递并产生通知与消费回执。详见 [真实环境最终报告](docs/so-ui-001-real-environment-acceptance-20261121.md)；完整功能及改动文件见 [初次验收记录](docs/so-ui-001-acceptance.md)。PR #4 保持未合并。
 
+随后已修复初始化导入字符集和中文演示数据，当前 `http://127.0.0.1:25173` 使用独立演示预约库，原验收历史保留。前端现为 34 项测试通过，Java 17 `mvn verify` 119 项通过；编号只用于展示，不改真实 ID。初始化文件、运行方式及保护范围见 [中文演示数据修复记录](docs/demo-data-cleanup-20261121.md)。
+
 ## Windows PowerShell：后端与 IDEA
 
 宿主 IDEA + Docker 中间件的混合开发模式可参考 `deploy/docker-compose.host-dev.yml`；此模式与下方的全容器演示相互独立，启动前应核对环境变量和数据库连接。通用命令见 [运行手册](docs/runbook.md)。
