@@ -16,6 +16,9 @@ const router = createRouter({
       { path: 'bookings', component: () => import('@/views/MyBookings.vue'), meta: { title: '我的预约' } },
       { path: 'notifications', component: () => import('@/views/Notifications.vue'), meta: { title: '通知中心' } },
       { path: 'profile', component: () => import('@/views/Profile.vue'), meta: { title: '个人中心' } },
+      { path: 'admin/rooms', component: () => import('@/views/AdminRooms.vue'), meta: { title: '会议室管理', admin: true } },
+      { path: 'admin/bookings', component: () => import('@/views/AdminBookings.vue'), meta: { title: '全部预约', admin: true } },
+      { path: 'admin/outbox', component: () => import('@/views/Outbox.vue'), meta: { title: 'Outbox 监控', admin: true } },
       { path: 'forbidden', component: () => import('@/views/RouteError.vue'), meta: { title: '无访问权限', forbidden: true } },
       { path: ':pathMatch(.*)*', component: () => import('@/views/RouteError.vue'), meta: { title: '页面不存在' } }
     ] }

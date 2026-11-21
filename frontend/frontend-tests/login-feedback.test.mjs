@@ -133,3 +133,29 @@ test('the login URL is exempt from session expiry only for a POST login attempt'
   assert.deepEqual(redirects, [{ path: '/login', query: { redirect: '/dashboard' } }]);
   assert.deepEqual(messages, ['登录已过期，请重新登录']);
 });
+
+for (const status of [200, 401]) {
+  test(`CSV request with HTTP ${status} and JSON Blob 401 still expires the session`, async () => {
+    setToken('expired-token');
+    router.currentRoute.value = { path: '/admin/bookings', fullPath: '/admin/bookings' };
+    respond(status, new Blob([JSON.stringify({code:401,message:'登录已过期',data:null})],{type:'application/json'}));
+    await assert.rejects(request({url:'/orders/export',responseType:'blob'}));
+    assert.equal(getToken(),null);
+    assert.deepEqual(redirects,[{path:'/login',query:{redirect:'/admin/bookings'}}]);
+  });
+}
+test('CSV forbidden JSON error is decoded without clearing a valid session', async () => {
+  setToken('valid-token'); respond(403,new Blob([JSON.stringify({code:403,message:'无导出权限'})],{type:'application/json'}));
+  await assert.rejects(request({url:'/orders/export',responseType:'blob'}));
+  assert.deepEqual(messages,['无导出权限']); assert.equal(getToken(),'valid-token');
+});
+test('admin actions use the existing real API methods, request bodies and CSV negotiation', async () => {
+  const rooms = await import('../src/api/rooms.ts'), orders = await import('../src/api/orders.ts'), outbox = await import('../src/api/outbox.ts');
+  const calls = [];
+  http.defaults.adapter = async config => { calls.push(config); return {status:200,statusText:'',config,headers:{},data:config.responseType==='blob'?new Blob(['id\n1'],{type:'text/csv'}):{code:200,message:'ok',data:[]}}; };
+  const room = {roomName:'Room',capacity:10,equipment:['Whiteboard'],status:1};
+  await rooms.createRoomApi(room); await rooms.updateRoomApi(9,room); await rooms.deleteRoomApi(9);
+  await orders.getAllOrdersApi(); await orders.exportOrdersApi(); await outbox.getOutboxApi();
+  assert.deepEqual(calls.map(x=>[x.method,x.url]),[['post','/rooms'],['put','/rooms/9'],['delete','/rooms/9'],['get','/orders'],['get','/orders/export'],['get','/admin/messages/outbox']]);
+  assert.deepEqual(JSON.parse(calls[0].data),room); assert.equal(calls[4].responseType,'blob'); assert.equal(calls[4].headers.Accept,'text/csv');
+});

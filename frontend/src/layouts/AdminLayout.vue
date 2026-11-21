@@ -5,6 +5,10 @@
       <RouterLink class="console-brand" to="/dashboard"><span v-if="!collapsed">SmartOffice<small>云智办</small></span><ElIcon v-else :size="28"><OfficeBuilding /></ElIcon></RouterLink>
       <p class="nav-group">{{ collapsed ? '办公' : '办公空间' }}</p>
       <nav><RouterLink v-for="item in navigation" :key="item.path" :to="item.path" class="nav-item" :title="item.label"><ElIcon :size="20"><component :is="item.icon" /></ElIcon><span>{{ item.label }}</span></RouterLink></nav>
+      <template v-if="session.user?.role === 'ADMIN'">
+        <p class="nav-group">管理</p>
+        <nav aria-label="管理员功能"><RouterLink v-for="item in administration" :key="item.path" :to="item.path" class="nav-item" :title="item.label"><ElIcon :size="20"><component :is="item.icon" /></ElIcon><span>{{ item.label }}</span></RouterLink></nav>
+      </template>
     </aside>
     <header class="console-header">
       <div class="header-location"><ElButton text circle :icon="Fold" aria-label="切换导航" @click="toggleNavigation" /><span class="muted breadcrumb-parent">办公空间 /</span><strong>{{ route.meta.title }}</strong></div>
@@ -16,11 +20,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { House, Calendar, Tickets, Bell, User, Fold, OfficeBuilding } from '@element-plus/icons-vue';
+import { House, Calendar, Tickets, Bell, User, Fold, OfficeBuilding, Setting, List, Connection } from '@element-plus/icons-vue';
 import { logout, session } from '@/state/session';
 const router = useRouter(), route = useRoute();
 const collapsed = ref(false), mobileOpen = ref(false);
 const navigation = [{ path: '/dashboard', label: '工作台', icon: House }, { path: '/rooms', label: '会议室预约', icon: Calendar }, { path: '/bookings', label: '我的预约', icon: Tickets }, { path: '/notifications', label: '通知中心', icon: Bell }, { path: '/profile', label: '个人中心', icon: User }];
+const administration = [{ path: '/admin/rooms', label: '会议室管理', icon: Setting }, { path: '/admin/bookings', label: '全部预约', icon: List }, { path: '/admin/outbox', label: 'Outbox 监控', icon: Connection }];
 function toggleNavigation() { if (window.matchMedia('(max-width: 900px)').matches) { collapsed.value = false; mobileOpen.value = !mobileOpen.value; } else collapsed.value = !collapsed.value; }
 function handleCommand(command: string) { if (command === 'logout') { logout(); void router.replace('/login'); } else void router.push('/profile'); }
 watch(() => route.fullPath, () => { mobileOpen.value = false; });
