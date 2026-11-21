@@ -16,3 +16,6 @@ export function getMyOrdersApi() {
 export function cancelOrderApi(id: number) {
   return request<void>({ url: `/orders/${id}/cancel`, method: "post" });
 }
+
+export function getAllOrdersApi() { return request<Order[]>({ url: '/orders', method: 'get' }); }
+export function exportOrdersApi() { return request<Blob>({ url: '/orders/export', method: 'get', responseType: 'blob', headers: { Accept: 'text/csv' } }); }

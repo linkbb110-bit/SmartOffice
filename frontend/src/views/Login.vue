@@ -62,7 +62,9 @@ import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { Lock, OfficeBuilding, User } from "@element-plus/icons-vue";
 
 import { loginApi, registerApi } from "@/api/auth";
-import { setToken } from "@/utils/auth";
+import { getToken, setToken } from "@/utils/auth";
+import { loadSession, resetSession } from "@/state/session";
+import { safeRedirect } from "@/utils/console";
 import type { LoginParams } from "@/types/room";
 
 const router = useRouter();
@@ -72,8 +74,8 @@ const loading = ref(false);
 const registering = ref(false);
 
 const form = reactive<LoginParams>({
-  username: "admin",
-  password: "123456"
+  username: "",
+  password: ""
 });
 
 const rules: FormRules<LoginParams> = {
@@ -95,8 +97,19 @@ async function handleLogin() {
     }
     const token = await loginApi(form);
     setToken(token);
+    resetSession();
+    try {
+      await loadSession();
+    } catch {
+      if (getToken()) {
+        await router.replace({ path: '/session-error', query: { redirect: safeRedirect(route.query.redirect) } });
+      } else {
+        ElMessage.error('无法确认当前身份，请重新登录');
+      }
+      return;
+    }
     ElMessage.success("登录成功");
-    const redirect = typeof route.query.redirect === "string" ? route.query.redirect : "/dashboard";
+    const redirect = safeRedirect(route.query.redirect);
     await router.replace(redirect);
   } catch {
     // Central request handling displays failures and keeps this form usable.

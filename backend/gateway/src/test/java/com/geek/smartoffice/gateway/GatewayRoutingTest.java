@@ -69,6 +69,9 @@ class GatewayRoutingTest {
     }
     @Test void managementPathsAreNotRoutedToInternalActuator() {
         path.set(null);
+        web.get().uri("/demo/environment").exchange().expectStatus().isNotFound();
+        web.get().uri("/api/demo/environment").exchange().expectStatus().isNotFound();
+        assertNull(path.get());
         web.get().uri("/api/actuator/env").exchange().expectStatus().isNotFound();
         assertNull(path.get());
         web.get().uri("/actuator/env").exchange().expectStatus().isNotFound();

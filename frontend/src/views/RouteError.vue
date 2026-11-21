@@ -1,0 +1,1 @@
+<template><section class="surface"><ElResult :icon="$route.meta.forbidden ? 'warning' : 'info'" :title="$route.meta.forbidden ? '无访问权限' : '页面不存在'" :sub-title="$route.meta.forbidden ? '当前账户无权进入管理页面。' : '请通过导航访问已有功能。'"><template #extra><ElButton type="primary" @click="$router.push('/dashboard')">返回工作台</ElButton></template></ElResult></section></template>

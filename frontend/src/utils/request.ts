@@ -23,6 +23,14 @@ function isLoginRequest(config?: AxiosRequestConfig) {
   return config?.method?.toLowerCase() === "post" && config.url === "/users/login";
 }
 
+async function decodePayload(payload: unknown): Promise<unknown> {
+  // CSV 下载使用 Blob，但认证/权限失败仍是 JSON，需要保留原有的登录过期处理。
+  if (payload instanceof Blob && /json/i.test(payload.type)) {
+    try { return JSON.parse(await payload.text()); } catch { return payload; }
+  }
+  return payload;
+}
+
 function redirectToLogin() {
   clearToken();
   if (router.currentRoute.value.path !== "/login") {
@@ -47,8 +55,8 @@ http.interceptors.request.use((config) => {
 });
 
 http.interceptors.response.use(
-  (response) => {
-    const payload = response.data;
+  async (response) => {
+    const payload = await decodePayload(response.data) as typeof response.data;
 
     if (!isApiResult(payload)) {
       return payload;
@@ -68,7 +76,9 @@ http.interceptors.response.use(
     ElMessage.error(payload.message || "请求失败，请稍后重试");
     return Promise.reject(payload);
   },
-  (error: AxiosError<ApiResult>) => {
+  async (error: AxiosError<ApiResult>) => {
+    const payload = await decodePayload(error.response?.data);
+    if (error.response && isApiResult(payload)) error.response.data = payload;
     const status = error.response?.status;
     const message =
       error.response?.data?.message || error.message || "网络异常，请稍后重试";

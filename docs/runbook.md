@@ -87,7 +87,7 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-17'
 ./deploy/upgrade/smoke-local.ps1 `
   -H2Jar '<本机 Maven 缓存中的 H2 JAR 绝对路径>' `
   -WithFrontend `
-  -BrowserScript '[历史本机验证资料，未随仓库公开]'
+  -BrowserScript '<本机浏览器验证脚本的绝对路径>'
 ```
 
 浏览器成功后，冒烟共9项且报告 browser=passed；正式冒烟运行中失败报告为 passed=false，不沿用旧结果（Java/H2路径等启动前参数错误直接抛出，应先修正参数）。桌面1366×900与手机390×844验证内容、截图和限制见 [browser-qa.md](browser-qa.md)。只允许访问本轮 loopback 地址，无外部账号或云服务。冒烟 JAR 正在运行时不要重新打包，以免 Windows 文件锁冲突。

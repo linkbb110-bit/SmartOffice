@@ -1,41 +1,43 @@
-import { createRouter, createWebHistory } from "vue-router";
-
-import { getToken } from "@/utils/auth";
+import { createRouter, createWebHistory } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { getToken } from '@/utils/auth';
+import { loadSession, resetSession } from '@/state/session';
+import { IdentityMismatch } from '@/utils/identitySession';
+import { safeRedirect } from '@/utils/console';
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(), scrollBehavior: () => ({ top: 0 }),
   routes: [
-    {
-      path: "/",
-      redirect: "/dashboard"
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: () => import("@/views/Login.vue"),
-      meta: { public: true }
-    },
-    {
-      path: "/dashboard",
-      name: "dashboard",
-      component: () => import("@/views/RoomList.vue")
-    },
-    {
-      path: "/:pathMatch(.*)*",
-      redirect: "/dashboard"
-    }
+    { path: '/login', name: 'login', component: () => import('@/views/Login.vue'), meta: { public: true } },
+    { path: '/session-error', component: () => import('@/views/SessionError.vue'), meta: { public: true } },
+    { path: '/', component: () => import('@/layouts/AdminLayout.vue'), redirect: '/dashboard', children: [
+      { path: 'dashboard', component: () => import('@/views/Dashboard.vue'), meta: { title: '工作台' } },
+      { path: 'rooms', component: () => import('@/views/RoomList.vue'), meta: { title: '会议室预约' } },
+      { path: 'bookings', component: () => import('@/views/MyBookings.vue'), meta: { title: '我的预约' } },
+      { path: 'notifications', component: () => import('@/views/Notifications.vue'), meta: { title: '通知中心' } },
+      { path: 'profile', component: () => import('@/views/Profile.vue'), meta: { title: '个人中心' } },
+      { path: 'admin/rooms', component: () => import('@/views/AdminRooms.vue'), meta: { title: '会议室管理', admin: true } },
+      { path: 'admin/bookings', component: () => import('@/views/AdminBookings.vue'), meta: { title: '全部预约', admin: true } },
+      { path: 'admin/outbox', component: () => import('@/views/Outbox.vue'), meta: { title: 'Outbox 监控', admin: true } },
+      { path: 'forbidden', component: () => import('@/views/RouteError.vue'), meta: { title: '无访问权限', forbidden: true } },
+      { path: ':pathMatch(.*)*', component: () => import('@/views/RouteError.vue'), meta: { title: '页面不存在' } }
+    ] }
   ]
 });
-
-router.beforeEach((to) => {
-  if (to.meta.public || getToken()) {
-    return true;
+router.beforeEach(async to => {
+  if (!getToken()) {
+    resetSession();
+    if (to.path === '/session-error') return { path: '/login', query: { redirect: safeRedirect(to.query.redirect) } };
+    return to.meta.public ? true : { path: '/login', query: { redirect: to.fullPath } };
   }
-
-  return {
-    path: "/login",
-    query: { redirect: to.fullPath }
-  };
+  if (to.meta.public) return true;
+  try {
+    const user = await loadSession();
+    if ((to.meta.admin || to.path.startsWith('/admin/')) && user.role !== 'ADMIN') return '/forbidden';
+    return true;
+  } catch (error) {
+    if (error instanceof IdentityMismatch) ElMessage.warning(error.message);
+    return { path: getToken() ? '/session-error' : '/login', query: { redirect: to.fullPath } };
+  }
 });
-
 export default router;
