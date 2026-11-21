@@ -2,6 +2,8 @@
 
 日期：2026-11-21。项目：`D:\A-project\smartoffice-rebuilt`。分支：`feat/admin-console`，基于 `541e034`；不合并 main。
 
+PR：[SO-UI-001 后台两阶段实现 #4](https://github.com/linkbb110-bit/SmartOffice/pull/4)，已打开，未合并。
+
 ## 已实现功能
 
 | 阶段 | 页面/能力 | 真实数据及操作 |
