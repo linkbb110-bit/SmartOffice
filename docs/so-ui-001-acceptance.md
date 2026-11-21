@@ -4,6 +4,8 @@
 
 PR：[SO-UI-001 后台两阶段实现 #4](https://github.com/linkbb110-bit/SmartOffice/pull/4)，已打开，未合并。
 
+本文件记录初次 H2 验收。随后已完成独立真实 MySQL/Redis/RocketMQ 的最终验收，包括实际消息投递与通知消费，见 [2026-11-21 真实环境报告](so-ui-001-real-environment-acceptance-20261121.md)。以下初次验收边界保留为历史记录，以最终报告为最新结果。
+
 ## 已实现功能
 
 | 阶段 | 页面/能力 | 真实数据及操作 |

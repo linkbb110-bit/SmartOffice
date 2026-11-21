@@ -57,7 +57,7 @@ npm run dev
 
 SO-UI-001 后台入口为 `/dashboard`，登录后可进入会议室预约、独立我的预约、通知中心和个人中心。ADMIN 额外显示会议室管理、全部预约/CSV 导出、Outbox 监控；服务端继续执行权限校验。通知及个人资料为真实 API 支持的只读展示，Outbox 仅展示最近 100 条投递记录，不提供重投操作。
 
-2026-11-21：前端 31 项测试、类型检查与生产构建通过，27 组浏览器场景通过。浏览器连接隔离 Java/Gateway + H2 内存库，未重新验收真实 MySQL/Redis/RocketMQ 链路。完整功能、改动文件与验证边界见 [SO-UI-001 验收记录](docs/so-ui-001-acceptance.md)。
+2026-11-21：前端 31 项测试、类型检查与生产构建通过。初次 H2 验收后，已使用独立 MySQL/Redis/RocketMQ、干净 PR 源码构建的 Java/Gateway 完成 18 组真实业务验收，另通过手机键盘及八个页面健康检查；两条消息实际投递并产生通知与消费回执。详见 [真实环境最终报告](docs/so-ui-001-real-environment-acceptance-20261121.md)；完整功能及改动文件见 [初次验收记录](docs/so-ui-001-acceptance.md)。PR #4 保持未合并。
 
 ## Windows PowerShell：后端与 IDEA
 
